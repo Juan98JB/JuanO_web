@@ -3,22 +3,22 @@
     {
       "id": "proyecto_1",
       "title": "Topología",
-      "desc": "Descripción breve del proyecto 1",
-      "url": "ca",
+      "desc": "Conceptos básicos de topología",
+      "url": "",
       "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       "bg": "",
-      "opacity": 0,
+      "opacity": 0.7,
       "imageUrl": "https://models.spriters-resource.com/media/preview_icons/288/291251.png?updated=1755498129"
     },
     {
       "id": "proyecto_2",
       "title": "Geometría",
-      "desc": "Descripción breve del proyecto 2",
+      "desc": "Geometría Elemental",
       "url": "",
       "gradient": "linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%)",
       "bg": "",
       "opacity": 1,
-      "imageUrl": ""
+      "imageUrl": "https://png.pngtree.com/png-vector/20251013/ourmid/pngtree-geometry-tools-set-including-ruler-compass-pencil-and-protractor-for-drawing-png-image_17707947.webp"
     },
     {
       "id": "proyecto_3",
