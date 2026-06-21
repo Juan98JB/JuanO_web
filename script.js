@@ -199,12 +199,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   }
 
+  function syncHardcodedCards() {
+    const local = loadLocalData();
+    document.querySelectorAll('.reading-grid .subcard, .card-grid .subcard').forEach(card => {
+      const id = card.dataset.id;
+      if (!id) return;
+      let item = null;
+      for (const arr of Object.values(DATA)) {
+        if (Array.isArray(arr)) { item = arr.find(i => i.id === id); if (item) break; }
+      }
+      if (!item) return;
+      const saved = local[id] || {};
+      const title = saved.title || item.title;
+      const desc = saved.desc || item.desc;
+      const url = saved.url || item.url;
+      const imgUrl = saved.imageUrl || item.imageUrl;
+      const opacity = saved.opacity != null ? saved.opacity : (item.opacity != null ? item.opacity : 1);
+      const titleEl = card.querySelector('.card-title');
+      const descEl = card.querySelector('.card-front .card-desc');
+      const front = card.querySelector('.card-front');
+      if (titleEl && title) titleEl.textContent = title;
+      if (descEl && desc) descEl.textContent = desc;
+      if (url) card.dataset.url = url;
+      if (front) {
+        if (imgUrl) {
+          applyBgWithOpacity(front, `url(${imgUrl})`, opacity);
+        } else if (item.gradient) {
+          front.style.background = item.gradient;
+        }
+      }
+    });
+  }
+
   fetch('data.json')
     .then(r => r.json())
     .then(data => {
       Object.assign(DATA, data);
       renderSubjectCards();
       renderNovedadesCards();
+      syncHardcodedCards();
       applyGearVisibility();
     })
     .catch(() => {});
