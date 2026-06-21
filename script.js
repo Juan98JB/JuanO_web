@@ -141,13 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function cardBg(saved, item) {
-    if (saved.imageUrl) {
+    const imgUrl = saved.imageUrl || (item && item.imageUrl);
+    if (imgUrl) {
       const o = saved.opacity != null ? saved.opacity : 1;
       const overlay = Math.round((1 - o) * 0.6 * 100) / 100;
-      const bg = `url(${saved.imageUrl}) center / cover no-repeat`;
+      const bg = `url(${imgUrl}) center / cover no-repeat`;
       return overlay > 0 ? `linear-gradient(rgba(0,0,0,${overlay}), rgba(0,0,0,${overlay})), ${bg}` : bg;
     }
-    return saved.gradient || item.gradient || '';
+    return saved.gradient || (item && item.gradient) || '';
   }
 
   function renderNovedadesCards() {
@@ -533,15 +534,15 @@ document.addEventListener('DOMContentLoaded', () => {
       local[id].url = newUrl;
       local[id].opacity = newOpacity;
 
-      // Save imageUrl (persists), apply visually only if no active preview
-      local[id].imageUrl = newImageUrl;
-      if (!card.dataset.previewBg) {
-        if (newImageUrl) {
+      // Save imageUrl only if user provided one (typed URL or uploaded file)
+      if (newImageUrl) {
+        local[id].imageUrl = newImageUrl;
+        if (!card.dataset.previewBg) {
           if (!card.dataset.origBg) card.dataset.origBg = front.style.background;
           applyBgWithOpacity(front, `url(${newImageUrl})`, newOpacity);
-        } else if (card.dataset.origBg) {
-          front.style.background = card.dataset.origBg;
         }
+      } else if (!card.dataset.previewBg && card.dataset.origBg) {
+        front.style.background = card.dataset.origBg;
       }
 
       // Subject card extra fields
