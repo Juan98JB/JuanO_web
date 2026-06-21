@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Juan O. Uribe - Matem&aacute;ticas, f&iacute;sica, computaci&oacute;n y ciencia de datos. ESFM.">
+    <meta property="og:title" content="Juan O. Uribe - ESFM">
+    <meta property="og:description" content="Matem&aacute;ticas, f&iacute;sica, computaci&oacute;n y ciencia de datos.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚡</text></svg>">
+    <title>Juan O. Uribe - ESFM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- HEADER / NAVBAR -->
+    <header class="navbar">
+        <div class="navbar__brand">
+            <div class="logo">ESFM</div>
+            <span>Juan O. Uribe</span>
+        </div>
+        <nav class="navbar_menu">
+            <a href="#" class="nav-link" data-page="matematicas">Matem&aacute;ticas</a>
+            <a href="#" class="nav-link" data-page="fisica">F&iacute;sica</a>
+            <a href="#" class="nav-link" data-page="computacion">Computaci&oacute;n</a>
+            <a href="#" class="nav-link" data-page="datos">Datos</a>
+            <a href="#" class="nav-link" data-page="recomendaciones">Curr&iacute;culum</a>
+        </nav>
+        <button class="theme-toggle">🌙</button>
+    </header>
+
+    <main>
+
+        <!-- ==============================
+             PAGE: NOVEDADES
+             ============================== -->
+        <section class="page active" id="page-novedades">
+            <div class="presentation">
+                <div class="presentation_cont">
+                    <h1>Juan O. Uribe</h1>
+                    <p>Matem&aacute;ticas, f&iacute;sica, ciencias de la computaci&oacute;n,<br>ciencia y an&aacute;lisis de datos.</p>
+                </div>
+                <div class="presentation_panel">
+                    <h2>Novedades</h2>
+                    <div class="tabs-container">
+                        <button class="tab active" data-index="0">Proyectos</button>
+                        <button class="tab" data-index="1">Notas</button>
+                        <button class="tab" data-index="2">Ejercicios</button>
+                        <button class="tab" data-index="3">Divulgaci&oacute;n</button>
+                    </div>
+                    <div class="cards-container" id="novedades-cards"></div>
+                </div>
+            </div>
+
+            <section class="recommendations">
+                <h2>Recomendaciones</h2>
+
+                <article class="reading-card">
+                    <h3>Lecturas</h3>
+                    <div class="reading-grid">
+                        <div class="subcard" data-id="lectura_1" data-title="Lectura 1" data-url="" data-desc="Lectura recomendada 1">
+                            <div class="card-inner">
+                                <div class="card-front" style="background: linear-gradient(135deg, #0c3483 0%, #a2b6df 100%);">
+                                    <span class="gear">&#9881;</span>
+                                    <h3 class="card-title">Lectura 1</h3>
+                                    <p class="card-desc">Lectura recomendada 1</p>
+                                </div>
+                                <div class="card-back">
+                                    <form class="card-form">
+                                        <label>Imagen <input type="file" accept="image/*"></label>
+                                        <label>Desc <input type="text" class="desc-input" value="Lectura recomendada 1"></label>
+                                        <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                        <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                        <button type="button" class="save-btn">Guardar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subcard" data-id="lectura_2" data-title="Lectura 2" data-url="" data-desc="Lectura recomendada 2">
+                            <div class="card-inner">
+                                <div class="card-front" style="background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%);">
+                                    <span class="gear">&#9881;</span>
+                                    <h3 class="card-title">Lectura 2</h3>
+                                    <p class="card-desc">Lectura recomendada 2</p>
+                                </div>
+                                <div class="card-back">
+                                    <form class="card-form">
+                                        <label>Imagen <input type="file" accept="image/*"></label>
+                                        <label>Desc <input type="text" class="desc-input" value="Lectura recomendada 2"></label>
+                                        <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                        <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                        <button type="button" class="save-btn">Guardar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subcard" data-id="lectura_3" data-title="Lectura 3" data-url="" data-desc="Lectura recomendada 3">
+                            <div class="card-inner">
+                                <div class="card-front" style="background: linear-gradient(135deg, #360033 0%, #0b8793 100%);">
+                                    <span class="gear">&#9881;</span>
+                                    <h3 class="card-title">Lectura 3</h3>
+                                    <p class="card-desc">Lectura recomendada 3</p>
+                                </div>
+                                <div class="card-back">
+                                    <form class="card-form">
+                                        <label>Imagen <input type="file" accept="image/*"></label>
+                                        <label>Desc <input type="text" class="desc-input" value="Lectura recomendada 3"></label>
+                                        <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                        <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                        <button type="button" class="save-btn">Guardar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subcard" data-id="lectura_4" data-title="Lectura 4" data-url="" data-desc="Lectura recomendada 4">
+                            <div class="card-inner">
+                                <div class="card-front" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);">
+                                    <span class="gear">&#9881;</span>
+                                    <h3 class="card-title">Lectura 4</h3>
+                                    <p class="card-desc">Lectura recomendada 4</p>
+                                </div>
+                                <div class="card-back">
+                                    <form class="card-form">
+                                        <label>Imagen <input type="file" accept="image/*"></label>
+                                        <label>Desc <input type="text" class="desc-input" value="Lectura recomendada 4"></label>
+                                        <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                        <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                        <button type="button" class="save-btn">Guardar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <div class="card-grid">
+                    <div class="subcard" data-id="canales" data-title="Canales" data-url="" data-desc="Canales de YouTube y podcasts recomendados sobre ciencia, matem&aacute;ticas y tecnolog&iacute;a.">
+                        <div class="card-inner">
+                            <div class="card-front" style="background: linear-gradient(135deg, #e65c00 0%, #f9d423 100%);">
+                                <span class="gear">&#9881;</span>
+                                <span class="card-icon">&#127916;</span>
+                                <h3 class="card-title">Canales</h3>
+                                <p class="card-desc">Canales de YouTube y podcasts recomendados sobre ciencia, matem&aacute;ticas y tecnolog&iacute;a.</p>
+                            </div>
+                            <div class="card-back">
+                                <form class="card-form">
+                                    <label>Imagen <input type="file" accept="image/*"></label>
+                                    <label>Desc <input type="text" class="desc-input" value="Canales de YouTube y podcasts recomendados sobre ciencia, matem&aacute;ticas y tecnolog&iacute;a."></label>
+                                    <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                    <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                    <button type="button" class="save-btn">Guardar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subcard" data-id="webs" data-title="Webs" data-url="" data-desc="Recursos web, documentaci&oacute;n y herramientas &uacute;tiles para el estudio y la investigaci&oacute;n.">
+                        <div class="card-inner">
+                            <div class="card-front" style="background: linear-gradient(135deg, #0c3483 0%, #a2b6df 100%);">
+                                <span class="gear">&#9881;</span>
+                                <span class="card-icon">&#127760;</span>
+                                <h3 class="card-title">Webs</h3>
+                                <p class="card-desc">Recursos web, documentaci&oacute;n y herramientas &uacute;tiles para el estudio y la investigaci&oacute;n.</p>
+                            </div>
+                            <div class="card-back">
+                                <form class="card-form">
+                                    <label>Imagen <input type="file" accept="image/*"></label>
+                                    <label>Desc <input type="text" class="desc-input" value="Recursos web, documentaci&oacute;n y herramientas &uacute;tiles para el estudio y la investigaci&oacute;n."></label>
+                                    <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                    <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                    <button type="button" class="save-btn">Guardar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subcard" data-id="cine" data-title="Cine" data-url="" data-desc="Pel&iacute;culas y documentales de ciencia ficci&oacute;n, divulgaci&oacute;n y cultura general.">
+                        <div class="card-inner">
+                            <div class="card-front" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);">
+                                <span class="gear">&#9881;</span>
+                                <span class="card-icon">&#127917;</span>
+                                <h3 class="card-title">Cine</h3>
+                                <p class="card-desc">Pel&iacute;culas y documentales de ciencia ficci&oacute;n, divulgaci&oacute;n y cultura general.</p>
+                            </div>
+                            <div class="card-back">
+                                <form class="card-form">
+                                    <label>Imagen <input type="file" accept="image/*"></label>
+                                    <label>Desc <input type="text" class="desc-input" value="Pel&iacute;culas y documentales de ciencia ficci&oacute;n, divulgaci&oacute;n y cultura general."></label>
+                                    <label>URL <input type="url" class="url-input" value="" placeholder="https://..."></label>
+                                    <label>Opacidad <input type="range" min="0" max="1" step="0.1" value="1" class="opacity-input"></label>
+                                    <button type="button" class="save-btn">Guardar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- ==============================
+             PAGE: MATEM&Aacute;TICAS
+             ============================== -->
+        <section class="page" id="page-matematicas">
+            <div class="page-header">
+                <h2>Matem&aacute;ticas</h2>
+                <p>Notas, ejercicios y recursos de matem&aacute;ticas.</p>
+            </div>
+            <div class="subject-grid" data-category="matematicas"></div>
+        </section>
+
+        <!-- ==============================
+             PAGE: F&Iacute;SICA
+             ============================== -->
+        <section class="page" id="page-fisica">
+            <div class="page-header">
+                <h2>F&iacute;sica</h2>
+                <p>Notas, ejercicios y recursos de f&iacute;sica.</p>
+            </div>
+            <div class="subject-grid" data-category="fisica"></div>
+        </section>
+
+        <!-- ==============================
+             PAGE: COMPUTACI&Oacute;N
+             ============================== -->
+        <section class="page" id="page-computacion">
+            <div class="page-header">
+                <h2>Computaci&oacute;n</h2>
+                <p>Notas, ejercicios y recursos de ciencias de la computaci&oacute;n.</p>
+            </div>
+            <div class="subject-grid" data-category="computacion"></div>
+        </section>
+
+        <!-- ==============================
+             PAGE: DATOS
+             ============================== -->
+        <section class="page" id="page-datos">
+            <div class="page-header">
+                <h2>Ciencia de Datos</h2>
+                <p>Notas, ejercicios y recursos de ciencia y an&aacute;lisis de datos.</p>
+            </div>
+            <div class="subject-grid" data-category="datos"></div>
+        </section>
+
+        <!-- ==============================
+             PAGE: CURR&Iacute;CULUM (vac&iacute;o)
+             ============================== -->
+        <section class="page" id="page-recomendaciones">
+        </section>
+
+    </main>
+
+    <!-- MODAL PARA CONTENIDO COMPLETO -->
+    <div class="modal-overlay" id="content-modal">
+        <div class="modal-container">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title"></h2>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

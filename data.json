@@ -1,0 +1,327 @@
+{
+    "proyectos": [
+        {
+            "id": "proyecto_1",
+            "title": "Proyecto 1",
+            "desc": "Descripci\u00f3n breve del proyecto 1",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "proyecto_2",
+            "title": "Proyecto 2",
+            "desc": "Descripci\u00f3n breve del proyecto 2",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "proyecto_3",
+            "title": "Proyecto 3",
+            "desc": "Descripci\u00f3n breve del proyecto 3",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+            "bg": "",
+            "opacity": 1
+        }
+    ],
+    "notas": [
+        {
+            "id": "nota_1",
+            "title": "Nota 1",
+            "desc": "Resumen de la nota 1",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "nota_2",
+            "title": "Nota 2",
+            "desc": "Resumen de la nota 2",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #02aab0 0%, #00cdac 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "nota_3",
+            "title": "Nota 3",
+            "desc": "Resumen de la nota 3",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)",
+            "bg": "",
+            "opacity": 1
+        }
+    ],
+    "ejercicios": [
+        {
+            "id": "ejercicio_1",
+            "title": "Ejercicio 1",
+            "desc": "Descripci\u00f3n del ejercicio 1",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "ejercicio_2",
+            "title": "Ejercicio 2",
+            "desc": "Descripci\u00f3n del ejercicio 2",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "ejercicio_3",
+            "title": "Ejercicio 3",
+            "desc": "Descripci\u00f3n del ejercicio 3",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)",
+            "bg": "",
+            "opacity": 1
+        }
+    ],
+    "divulgacion": [
+        {
+            "id": "articulo_1",
+            "title": "Art\u00edculo 1",
+            "desc": "Resumen del art\u00edculo de divulgaci\u00f3n 1",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "articulo_2",
+            "title": "Art\u00edculo 2",
+            "desc": "Resumen del art\u00edculo de divulgaci\u00f3n 2",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "articulo_3",
+            "title": "Art\u00edculo 3",
+            "desc": "Resumen del art\u00edculo de divulgaci\u00f3n 3",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "bg": "",
+            "opacity": 1
+        }
+    ],
+    "matematicas": [
+        {
+            "id": "mat_calculo",
+            "title": "C\u00e1lculo Diferencial",
+            "desc": "L\u00edmites, derivadas y aplicaciones en una variable.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de C\u00e1lculo Diferencial: definici\u00f3n de l\u00edmite, derivadas, reglas de derivaci\u00f3n y aplicaciones.",
+            "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "icon": "\u222b"
+        },
+        {
+            "id": "mat_algebra",
+            "title": "\u00c1lgebra Lineal",
+            "desc": "Vectores, matrices, espacios vectoriales y transformaciones.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de \u00c1lgebra Lineal: sistemas de ecuaciones, matrices, determinantes, espacios vectoriales y valores propios.",
+            "gradient": "linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%)",
+            "icon": "\u2395"
+        },
+        {
+            "id": "mat_edo",
+            "title": "Ecuaciones Diferenciales",
+            "desc": "EDO, EDP y m\u00e9todos de soluci\u00f3n.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Ecuaciones Diferenciales: EDO de primer orden, lineales, sistemas y EDP b\u00e1sicas.",
+            "gradient": "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+            "icon": "\u2202"
+        },
+        {
+            "id": "mat_probabilidad",
+            "title": "Probabilidad",
+            "desc": "Distribuciones, teoremas l\u00edmite y aplicaciones.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Probabilidad: espacios de probabilidad, variables aleatorias, distribuciones y teoremas l\u00edmite.",
+            "gradient": "linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%)",
+            "icon": "\u03a3"
+        }
+    ],
+    "fisica": [
+        {
+            "id": "fis_mecanica",
+            "title": "Mec\u00e1nica Cl\u00e1sica",
+            "desc": "Leyes de Newton, Lagrange y Hamilton.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Mec\u00e1nica Cl\u00e1sica: cinem\u00e1tica, din\u00e1mica, formulaci\u00f3n lagrangiana y hamiltoniana.",
+            "gradient": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+            "icon": "\u2699"
+        },
+        {
+            "id": "fis_termo",
+            "title": "Termodin\u00e1mica",
+            "desc": "Leyes de la termodin\u00e1mica, entrop\u00eda y procesos.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Termodin\u00e1mica: leyes, entrop\u00eda, ciclos termodin\u00e1micos y potenciales.",
+            "gradient": "linear-gradient(135deg, #02aab0 0%, #00cdac 100%)",
+            "icon": "\u0394"
+        },
+        {
+            "id": "fis_electro",
+            "title": "Electromagnetismo",
+            "desc": "Campos, ondas y ecuaciones de Maxwell.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Electromagnetismo: electrost\u00e1tica, magnetost\u00e1tica, ondas electromagn\u00e9ticas y ecuaciones de Maxwell.",
+            "gradient": "linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)",
+            "icon": "\u2359"
+        },
+        {
+            "id": "fis_cuantica",
+            "title": "Mec\u00e1nica Cu\u00e1ntica",
+            "desc": "Schr\u00f6dinger, \u00e1tomos y part\u00edculas.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Mec\u00e1nica Cu\u00e1ntica: ecuaci\u00f3n de Schr\u00f6dinger, pozos de potencial, \u00e1tomo de hidr\u00f3geno y esp\u00edn.",
+            "gradient": "linear-gradient(135deg, #1cd8d2 0%, #93edc7 100%)",
+            "icon": "\u210f"
+        }
+    ],
+    "computacion": [
+        {
+            "id": "comp_estructuras",
+            "title": "Estructuras de Datos",
+            "desc": "Arrays, listas, \u00e1rboles, grafos y tablas hash.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Estructuras de Datos: listas enlazadas, pilas, colas, \u00e1rboles binarios, grafos y tablas hash.",
+            "gradient": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            "icon": "\u2261"
+        },
+        {
+            "id": "comp_algoritmos",
+            "title": "Algoritmos",
+            "desc": "B\u00fasqueda, ordenamiento, complejidad y optimizaci\u00f3n.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Algoritmos: an\u00e1lisis de complejidad, ordenamiento, b\u00fasqueda, programaci\u00f3n din\u00e1mica y greedy.",
+            "gradient": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            "icon": "\u2b06"
+        },
+        {
+            "id": "comp_redes",
+            "title": "Redes de Computadoras",
+            "desc": "TCP/IP, protocolos, routing y seguridad.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Redes: modelo OSI, TCP/IP, protocolos de aplicaci\u00f3n, routing y seguridad de redes.",
+            "gradient": "linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)",
+            "icon": "\u25c9"
+        },
+        {
+            "id": "comp_bd",
+            "title": "Bases de Datos",
+            "desc": "SQL, normalizaci\u00f3n, transacciones y NoSQL.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Bases de Datos: modelo relacional, SQL, normalizaci\u00f3n, transacciones y bases NoSQL.",
+            "gradient": "linear-gradient(135deg, #e65c00 0%, #f9d423 100%)",
+            "icon": "\u2bdb"
+        }
+    ],
+    "datos": [
+        {
+            "id": "dat_estadistica",
+            "title": "Estad\u00edstica",
+            "desc": "Descriptiva, inferencial, pruebas de hip\u00f3tesis.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Estad\u00edstica: estad\u00edstica descriptiva, inferencia, pruebas de hip\u00f3tesis y regresi\u00f3n.",
+            "gradient": "linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)",
+            "icon": "\u2264"
+        },
+        {
+            "id": "dat_ml",
+            "title": "Machine Learning",
+            "desc": "Supervisado, no supervisado, redes neuronales.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Machine Learning: regresi\u00f3n, clasificaci\u00f3n, clustering, SVMs y redes neuronales.",
+            "gradient": "linear-gradient(135deg, #1f4037 0%, #99f2c8 100%)",
+            "icon": "\u25c7"
+        },
+        {
+            "id": "dat_viz",
+            "title": "Visualizaci\u00f3n",
+            "desc": "Matplotlib, ggplot, dashboards interactivos.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Visualizaci\u00f3n: principios de visualizaci\u00f3n, Matplotlib, seaborn, plotly y dashboards.",
+            "gradient": "linear-gradient(135deg, #360033 0%, #0b8793 100%)",
+            "icon": "\u25a0"
+        },
+        {
+            "id": "dat_python",
+            "title": "Python para Datos",
+            "desc": "NumPy, Pandas, scikit-learn.",
+            "content": "Contenido pendiente. Aqu\u00ed ir\u00e1n las notas completas de Python: NumPy, Pandas, scikit-learn, pipelines y buenas pr\u00e1cticas.",
+            "gradient": "linear-gradient(135deg, #232526 0%, #414345 100%)",
+            "icon": "\u25b6"
+        }
+    ],
+    "lecturas": [
+        {
+            "id": "lectura_1",
+            "title": "Lectura 1",
+            "desc": "Lectura recomendada 1",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "lectura_2",
+            "title": "Lectura 2",
+            "desc": "Lectura recomendada 2",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #1f4037 0%, #99f2c8 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "lectura_3",
+            "title": "Lectura 3",
+            "desc": "Lectura recomendada 3",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #360033 0%, #0b8793 100%)",
+            "bg": "",
+            "opacity": 1
+        },
+        {
+            "id": "lectura_4",
+            "title": "Lectura 4",
+            "desc": "Lectura recomendada 4",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #232526 0%, #414345 100%)",
+            "bg": "",
+            "opacity": 1
+        }
+    ],
+    "recomendaciones": [
+        {
+            "id": "canales",
+            "title": "Canales",
+            "desc": "Canales de YouTube y podcasts recomendados sobre ciencia, matem\u00e1ticas y tecnolog\u00eda.",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #e65c00 0%, #f9d423 100%)",
+            "bg": "",
+            "opacity": 1,
+            "icon": "\ud83c\udfac",
+            "fixedTitle": true
+        },
+        {
+            "id": "webs",
+            "title": "Webs",
+            "desc": "Recursos web, documentaci\u00f3n y herramientas \u00fatiles para el estudio y la investigaci\u00f3n.",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)",
+            "bg": "",
+            "opacity": 1,
+            "icon": "\ud83c\udf10",
+            "fixedTitle": true
+        },
+        {
+            "id": "cine",
+            "title": "Cine",
+            "desc": "Pel\u00edculas y documentales de ciencia ficci\u00f3n, divulgaci\u00f3n y cultura general.",
+            "url": "",
+            "gradient": "linear-gradient(135deg, #232526 0%, #414345 100%)",
+            "bg": "",
+            "opacity": 1,
+            "icon": "\ud83c\udfac",
+            "fixedTitle": true
+        }
+    ]
+}
