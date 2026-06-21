@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyGearVisibility() {
     const show = isAdmin();
     document.querySelectorAll('.gear').forEach(g => g.style.display = show ? '' : 'none');
+    const exportBtn = document.querySelector('.export-btn');
+    if (exportBtn) exportBtn.style.display = show ? '' : 'none';
   }
 
   async function sha256(str) {
@@ -389,8 +391,41 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      Unified click handling (gear, save, navigate)
      ============================================ */
+  function exportData() {
+    const local = loadLocalData();
+    const merged = {};
+    for (const [key, items] of Object.entries(DATA)) {
+      merged[key] = items.map(item => {
+        const saved = local[item.id];
+        if (!saved) return { ...item };
+        const result = { ...item };
+        if (saved.title !== undefined) result.title = saved.title;
+        if (saved.desc !== undefined) result.desc = saved.desc;
+        if (saved.url !== undefined) result.url = saved.url;
+        if (saved.content !== undefined) result.content = saved.content;
+        if (saved.gradient !== undefined) result.gradient = saved.gradient;
+        if (saved.imageUrl !== undefined) result.imageUrl = saved.imageUrl;
+        if (saved.opacity !== undefined) result.opacity = saved.opacity;
+        return result;
+      });
+    }
+    const blob = new Blob([JSON.stringify(merged, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   document.addEventListener('click', (e) => {
     const target = e.target;
+
+    // 0 - Export button
+    if (target.closest('.export-btn')) {
+      exportData();
+      return;
+    }
 
     // 1 - Gear click → toggle flip
     const gear = target.closest('.gear');
