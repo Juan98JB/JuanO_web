@@ -299,14 +299,15 @@
   "recomendaciones": [
     {
       "id": "canales",
-      "title": "Canales",
-      "desc": "Canales de YouTube y podcasts recomendados sobre ciencia, matemáticas y tecnología.",
-      "url": "",
+      "title": "Picel Cuántico",
+      "desc": "Divulgación físico-matemática",
+      "url": "https://www.youtube.com/@PixelCuantico",
       "gradient": "linear-gradient(135deg, #e65c00 0%, #f9d423 100%)",
       "bg": "",
       "opacity": 1,
       "icon": "🎬",
-      "fixedTitle": true
+      "fixedTitle": true,
+      "imageUrl": "https://yt3.googleusercontent.com/FPYAEMd3cFBmmXYZrx7O03W5m9L67i21X9nknis9gCnz6OqbaAU9PbWcvWnr0Qdd5Hk_HuehXw=s900-c-k-c0x00ffffff-no-rj"
     },
     {
       "id": "webs",
