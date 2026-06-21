@@ -391,7 +391,11 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      Unified click handling (gear, save, navigate)
      ============================================ */
-  function exportData() {
+  const GH_OWNER = 'Juan98JB';
+  const GH_REPO = 'JuanO_web';
+  const GH_BRANCH = 'main';
+
+  async function exportData() {
     const local = loadLocalData();
     const merged = {};
     for (const [key, items] of Object.entries(DATA)) {
@@ -409,13 +413,55 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
       });
     }
-    const blob = new Blob([JSON.stringify(merged, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'data.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    const content = JSON.stringify(merged, null, 2);
+
+    let token = sessionStorage.getItem('gh_token');
+    if (!token) {
+      token = prompt('Ingresa tu token de GitHub (Settings → Developer settings → Personal access tokens → Fine-grained tokens, permiso "Contents: write"):');
+      if (!token) return;
+      sessionStorage.setItem('gh_token', token);
+    }
+
+    const exportBtn = document.querySelector('.export-btn');
+    if (exportBtn) exportBtn.textContent = 'Subiendo...';
+
+    try {
+      // 1. Get current file to obtain SHA
+      const getUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/data.json?ref=${GH_BRANCH}`;
+      const getRes = await fetch(getUrl, {
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (!getRes.ok && getRes.status !== 404) throw new Error(`Error al obtener el archivo: ${getRes.status}`);
+      const sha = getRes.ok ? (await getRes.json()).sha : null;
+
+      // 2. Push new content
+      const putUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/data.json`;
+      const putBody = {
+        message: 'Actualizar data.json desde admin panel',
+        content: btoa(unescape(encodeURIComponent(content))),
+        branch: GH_BRANCH
+      };
+      if (sha) putBody.sha = sha;
+
+      const putRes = await fetch(putUrl, {
+        method: 'PUT',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(putBody)
+      });
+      if (!putRes.ok) {
+        const err = await putRes.json();
+        throw new Error(err.message || `Error al subir: ${putRes.status}`);
+      }
+
+      alert('data.json actualizado en GitHub. Los cambios se verán en ~1-2 minutos.');
+    } catch (err) {
+      alert('Error: ' + err.message);
+      if (err.message.includes('Bad credentials') || err.message.includes('401')) {
+        sessionStorage.removeItem('gh_token');
+      }
+    } finally {
+      if (exportBtn) exportBtn.textContent = 'Exportar data.json';
+    }
   }
 
   document.addEventListener('click', (e) => {
