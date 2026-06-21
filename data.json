@@ -12,13 +12,13 @@
     },
     {
       "id": "proyecto_2",
-      "title": "Geometría",
-      "desc": "Geometría Elemental",
+      "title": "",
+      "desc": "",
       "url": "",
       "gradient": "linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%)",
       "bg": "",
-      "opacity": 1,
-      "imageUrl": "https://png.pngtree.com/png-vector/20251013/ourmid/pngtree-geometry-tools-set-including-ruler-compass-pencil-and-protractor-for-drawing-png-image_17707947.webp"
+      "opacity": 0,
+      "imageUrl": ""
     },
     {
       "id": "proyecto_3",
@@ -43,12 +43,13 @@
     },
     {
       "id": "nota_2",
-      "title": "Nota 2",
-      "desc": "Resumen de la nota 2",
+      "title": "Geometría",
+      "desc": "Geometría Elemental",
       "url": "",
       "gradient": "linear-gradient(135deg, #02aab0 0%, #00cdac 100%)",
       "bg": "",
-      "opacity": 1
+      "opacity": 1,
+      "imageUrl": "https://png.pngtree.com/png-vector/20251013/ourmid/pngtree-geometry-tools-set-including-ruler-compass-pencil-and-protractor-for-drawing-png-image_17707947.webp"
     },
     {
       "id": "nota_3",
@@ -257,30 +258,33 @@
   "lecturas": [
     {
       "id": "lectura_1",
-      "title": "Lectura 1",
-      "desc": "Lectura recomendada 1",
+      "title": "Modern Quantum Mechanics (Sakurai)",
+      "desc": "",
       "url": "",
       "gradient": "linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)",
       "bg": "",
-      "opacity": 1
+      "opacity": 0.8,
+      "imageUrl": "https://m.media-amazon.com/images/I/51jkLHTdf1L._UF1000,1000_QL80_.jpg"
     },
     {
       "id": "lectura_2",
-      "title": "Lectura 2",
-      "desc": "Lectura recomendada 2",
+      "title": "Mathematical Physics (Hassani)",
+      "desc": "",
       "url": "",
       "gradient": "linear-gradient(135deg, #1f4037 0%, #99f2c8 100%)",
       "bg": "",
-      "opacity": 1
+      "opacity": 0.5,
+      "imageUrl": "https://m.media-amazon.com/images/I/61jEA7VR47L._UF1000,1000_QL80_.jpg"
     },
     {
       "id": "lectura_3",
-      "title": "Lectura 3",
-      "desc": "Lectura recomendada 3",
+      "title": "El evangelio según Jesucristo (Saramago)",
+      "desc": "",
       "url": "",
       "gradient": "linear-gradient(135deg, #360033 0%, #0b8793 100%)",
       "bg": "",
-      "opacity": 1
+      "opacity": 0.6,
+      "imageUrl": "https://m.media-amazon.com/images/I/710t0FkaBgL.jpg"
     },
     {
       "id": "lectura_4",
