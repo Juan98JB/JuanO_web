@@ -33,12 +33,13 @@
   "notas": [
     {
       "id": "nota_1",
-      "title": "Nota 1",
-      "desc": "Resumen de la nota 1",
+      "title": "Cálculo",
+      "desc": "",
       "url": "",
       "gradient": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
       "bg": "",
-      "opacity": 1
+      "opacity": 0.1,
+      "imageUrl": "https://miro.medium.com/v2/resize:fit:988/1*waBbPwjnvIcB2IU2FjhbVA.png"
     },
     {
       "id": "nota_2",
