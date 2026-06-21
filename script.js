@@ -506,7 +506,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const newTitle = titleInput ? titleInput.value.trim() : '';
       const newDesc = descInput ? descInput.value.trim() : '';
       const newUrl = urlInput ? urlInput.value.trim() : '';
-      const newImageUrl = imageUrlInput ? imageUrlInput.value.trim() : '';
+      let newImageUrl = imageUrlInput ? imageUrlInput.value.trim() : '';
+      if (!newImageUrl && card.dataset.previewBg) {
+        const m = card.dataset.previewBg.match(/^url\(["']?(data:.+?)["']?\)$/);
+        if (m) {
+          newImageUrl = m[1];
+          const sizeKB = Math.round(newImageUrl.length * 0.75 / 1024);
+          if (sizeKB > 500 && !confirm(`La imagen pesa ~${sizeKB} KB. Se guardar\u00e1 en data.json como base64 y har\u00e1 el archivo m\u00e1s pesado.\n\n\u00bfSubir de todas formas?`)) {
+            return;
+          }
+        }
+      }
       const newOpacity = opacitySlider ? parseFloat(opacitySlider.value) : 1;
 
       if (titleEl) titleEl.textContent = newTitle;
