@@ -69,13 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      SPA: Page Navigation
      ============================================ */
-  function showPage(pageId, topic) {
+  function showPage(pageId, mode, topic) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const page = document.getElementById(`page-${pageId}`);
     if (page) page.classList.add('active');
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     const link = document.querySelector(`.nav-link[data-page="${pageId}"]`);
     if (link) link.classList.add('active');
+
+    const activeMode = mode || 'notas';
+    page?.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    const modeTab = page?.querySelector(`.mode-tab[data-mode="${activeMode}"]`);
+    if (modeTab) modeTab.classList.add('active');
+    page?.querySelectorAll('.subject-mode').forEach(m => m.classList.remove('active'));
+    const modeContent = page?.querySelector(`.subject-mode[data-mode="${activeMode}"]`);
+    if (modeContent) modeContent.classList.add('active');
 
     document.querySelectorAll('.subject-nav__menu a').forEach(a => a.classList.remove('active-topic'));
     if (topic) {
@@ -88,9 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.slice(1);
     if (hash.includes('/')) {
       const parts = hash.split('/');
-      return { page: parts[0], topic: parts.slice(1).join('/') };
+      if (parts.length >= 2 && (parts[1] === 'notas' || parts[1] === 'ejercicios')) {
+        return { page: parts[0], mode: parts[1], topic: parts.slice(2).join('/') || null };
+      }
+      return { page: parts[0], mode: null, topic: parts.slice(1).join('/') || null };
     }
-    return { page: hash, topic: null };
+    return { page: hash, mode: null, topic: null };
   }
 
   document.querySelectorAll('.nav-link').forEach(link => {
@@ -108,13 +119,28 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const topic = topicLink.dataset.topic;
       const page = topicLink.closest('.page').id.replace('page-', '');
-      showPage(page, topic);
-      window.history.replaceState(null, '', `#${page}/${topic}`);
+      const activeModeTab = topicLink.closest('.page')?.querySelector('.mode-tab.active');
+      const mode = activeModeTab?.dataset.mode || 'notas';
+      showPage(page, mode, topic);
+      window.history.replaceState(null, '', `#${page}/${mode}/${topic}`);
     }
   });
 
-  const { page: initialPage, topic: initialTopic } = parseHash();
-  showPage(initialPage || 'novedades', initialTopic);
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const mode = tab.dataset.mode;
+      const page = tab.closest('.page');
+      const pageId = page.id.replace('page-', '');
+      const activeTopic = page.querySelector('.subject-nav__menu a.active-topic');
+      const topic = activeTopic?.dataset.topic;
+      showPage(pageId, mode, topic);
+      const hash = topic ? `#${pageId}/${mode}/${topic}` : `#${pageId}/${mode}`;
+      window.history.replaceState(null, '', hash);
+    });
+  });
+
+  const { page: initialPage, mode: initialMode, topic: initialTopic } = parseHash();
+  showPage(initialPage || 'novedades', initialMode, initialTopic);
 
   /* ============================================
      Data Fetch & Subject Cards

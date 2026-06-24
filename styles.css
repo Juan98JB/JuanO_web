@@ -273,6 +273,56 @@ button {
   font-weight: 600;
 }
 
+/* ============================================
+   Mode Tabs (Notas / Ejercicios)
+   ============================================ */
+.mode-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all var(--transition-speed) ease;
+}
+
+.mode-tab:hover {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.mode-tab.active {
+  color: var(--btn-primary-text);
+  background: var(--accent);
+  font-weight: 600;
+}
+
+.subject-content {
+  margin-top: 1.5rem;
+}
+
+.subject-mode {
+  display: none;
+}
+
+.subject-mode.active {
+  display: block;
+}
+
 .admin_btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
