@@ -199,6 +199,80 @@ button {
   transition: background var(--transition-speed) ease, transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
+/* ============================================
+   Subject Nav (Dropdowns en páginas de materia)
+   ============================================ */
+.subject-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.subject-nav__dropdown {
+  position: relative;
+}
+
+.subject-nav__btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-speed) ease;
+  white-space: nowrap;
+}
+
+.subject-nav__btn:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.subject-nav__menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 260px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  z-index: 100;
+}
+
+.subject-nav__dropdown:hover .subject-nav__menu,
+.subject-nav__dropdown:focus-within .subject-nav__menu {
+  display: block;
+}
+
+.subject-nav__menu a {
+  display: block;
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-speed) ease;
+}
+
+.subject-nav__menu a:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.subject-nav__menu a.active-topic {
+  background: var(--accent);
+  color: var(--btn-primary-text);
+  font-weight: 600;
+}
+
 .admin_btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

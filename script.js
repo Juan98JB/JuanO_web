@@ -69,13 +69,28 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      SPA: Page Navigation
      ============================================ */
-  function showPage(pageId) {
+  function showPage(pageId, topic) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const page = document.getElementById(`page-${pageId}`);
     if (page) page.classList.add('active');
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     const link = document.querySelector(`.nav-link[data-page="${pageId}"]`);
     if (link) link.classList.add('active');
+
+    document.querySelectorAll('.subject-nav__menu a').forEach(a => a.classList.remove('active-topic'));
+    if (topic) {
+      const topicLink = document.querySelector(`.subject-nav__menu a[data-topic="${topic}"]`);
+      if (topicLink) topicLink.classList.add('active-topic');
+    }
+  }
+
+  function parseHash() {
+    const hash = window.location.hash.slice(1);
+    if (hash.includes('/')) {
+      const parts = hash.split('/');
+      return { page: parts[0], topic: parts.slice(1).join('/') };
+    }
+    return { page: hash, topic: null };
   }
 
   document.querySelectorAll('.nav-link').forEach(link => {
@@ -87,8 +102,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const initialPage = window.location.hash.slice(1) || 'novedades';
-  showPage(initialPage);
+  document.addEventListener('click', (e) => {
+    const topicLink = e.target.closest('.subject-nav__menu a');
+    if (topicLink) {
+      e.preventDefault();
+      const topic = topicLink.dataset.topic;
+      const page = topicLink.closest('.page').id.replace('page-', '');
+      showPage(page, topic);
+      window.history.replaceState(null, '', `#${page}/${topic}`);
+    }
+  });
+
+  const { page: initialPage, topic: initialTopic } = parseHash();
+  showPage(initialPage || 'novedades', initialTopic);
 
   /* ============================================
      Data Fetch & Subject Cards
