@@ -13,16 +13,16 @@
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
   --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.18);
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-light: rgba(79, 70, 229, 0.1);
+  --accent: #8B6914;
+  --accent-hover: #7A5C0A;
+  --accent-light: rgba(139,105,20,0.12);
   --navbar-bg: rgba(244, 236, 216, 0.85);
-  --badge-bg: rgba(79, 70, 229, 0.12);
-  --badge-text: #4f46e5;
+  --badge-bg: rgba(139,105,20,0.12);
+  --badge-text: #8B6914;
   --input-bg: #EDE0C8;
   --input-border: #D8C9B0;
-  --input-focus: #4f46e5;
-  --btn-primary-bg: #4f46e5;
+  --input-focus: #8B6914;
+  --btn-primary-bg: #8B6914;
   --btn-primary-text: #ffffff;
   --transition-speed: 0.3s;
 }
@@ -39,16 +39,16 @@
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
   --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --accent: #569cd6;
-  --accent-hover: #75b8f0;
-  --accent-light: rgba(86, 156, 214, 0.15);
+  --accent: #D4A84B;
+  --accent-hover: #E0B85C;
+  --accent-light: rgba(212,168,75,0.15);
   --navbar-bg: rgba(37, 37, 38, 0.92);
-  --badge-bg: rgba(86, 156, 214, 0.18);
-  --badge-text: #75b8f0;
+  --badge-bg: rgba(212,168,75,0.18);
+  --badge-text: #D4A84B;
   --input-bg: #1e1e1e;
   --input-border: #3c3c3c;
-  --input-focus: #569cd6;
-  --btn-primary-bg: #0e639c;
+  --input-focus: #D4A84B;
+  --btn-primary-bg: #8B6914;
   --btn-primary-text: #ffffff;
 }
 
