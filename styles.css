@@ -2,13 +2,13 @@
    CSS Variables - Light & Dark Themes
    ============================================ */
 :root {
-  --bg-primary: #f0f2f5;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --text-primary: #1a1a2e;
-  --text-secondary: #555770;
-  --text-muted: #8e8ea0;
-  --border-color: #e4e6eb;
+  --bg-primary: #F4ECD8;
+  --bg-secondary: #EDE0C8;
+  --bg-card: #F5EDD9;
+  --text-primary: #3D2B1F;
+  --text-secondary: #6B4F3E;
+  --text-muted: #9C8778;
+  --border-color: #D8C9B0;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
@@ -16,11 +16,11 @@
   --accent: #4f46e5;
   --accent-hover: #4338ca;
   --accent-light: rgba(79, 70, 229, 0.1);
-  --navbar-bg: rgba(255, 255, 255, 0.85);
+  --navbar-bg: rgba(244, 236, 216, 0.85);
   --badge-bg: rgba(79, 70, 229, 0.12);
   --badge-text: #4f46e5;
-  --input-bg: #f7f8fa;
-  --input-border: #d1d5db;
+  --input-bg: #EDE0C8;
+  --input-border: #D8C9B0;
   --input-focus: #4f46e5;
   --btn-primary-bg: #4f46e5;
   --btn-primary-text: #ffffff;
