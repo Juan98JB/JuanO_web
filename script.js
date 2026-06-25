@@ -86,23 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modeContent) modeContent.classList.add('active');
 
     document.querySelectorAll('.subject-nav__menu a').forEach(a => a.classList.remove('active-topic'));
-    document.querySelectorAll('#page-matematicas .math-note-card, #page-matematicas .math-featured__card').forEach(c => c.classList.remove('active-topic'));
+    document.querySelectorAll('.subject-note-card, .subject-featured__card').forEach(c => c.classList.remove('active-topic'));
 
     if (topic) {
       const topicLink = document.querySelector(`.subject-nav__menu a[data-topic="${topic}"]`);
       if (topicLink) topicLink.classList.add('active-topic');
 
-      const noteCard = document.querySelector(`#page-matematicas .math-note-card[data-id="${topic}"], #page-matematicas .math-featured__card[data-id="${topic}"]`);
+      const noteCard = document.querySelector(`.subject-note-card[data-id="${topic}"], .subject-featured__card[data-id="${topic}"]`);
       if (noteCard) {
         noteCard.classList.add('active-topic');
         noteCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         const cat = noteCard.dataset.category;
-        if (cat) filterMathNotes(cat);
+        if (cat) {
+          const page = noteCard.closest('.page');
+          page.querySelectorAll('.subject-category').forEach(el => el.classList.remove('active'));
+          const catEl = page.querySelector(`.subject-category[data-category="${cat}"]`);
+          if (catEl) catEl.classList.add('active');
+          const pageId = page.id.replace('page-', '');
+          filterSubjectNotes(pageId);
+        }
       }
-    }
-
-    if (pageId === 'matematicas') {
-      animateMathStats();
     }
   }
 
@@ -148,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let activeTopic = page.querySelector('.subject-nav__menu a.active-topic');
       let topic = activeTopic?.dataset.topic;
       if (!topic) {
-        const activeCard = page.querySelector('.math-note-card.active-topic, .math-featured__card.active-topic');
+        const activeCard = page.querySelector('.subject-note-card.active-topic, .subject-featured__card.active-topic');
         topic = activeCard?.dataset.id;
       }
       showPage(pageId, mode, topic);
@@ -191,15 +194,56 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
+  const PHY_DATA = {
+    clasica: [
+      { id: 'mecanica-newtoniana', title: 'Mec\u00e1nica Newtoniana', icon: '\u2699', desc: 'Leyes de Newton, energ\u00eda, momento y movimiento.' },
+      { id: 'electromagnetismo', title: 'Electromagnetismo (Ecuaciones de Maxwell)', icon: '\u2b29', desc: 'Campos el\u00e9ctrico y magn\u00e9tico, ondas electromagn\u00e9ticas.' },
+      { id: 'termodinamica', title: 'Termodin\u00e1mica y Mec\u00e1nica Estad\u00edstica', icon: '\u0394', desc: 'Leyes de la termodin\u00e1mica, entrop\u00eda y ensambles.' },
+      { id: 'optica-y-ondas', title: '\u00d3ptica y Ondas', icon: '\u2360', desc: 'Ondas mec\u00e1nicas y electromagn\u00e9ticas, \u00f3ptica geom\u00e9trica y f\u00edsica.' },
+      { id: 'fluidos', title: 'Fluidos', icon: '\u224f', desc: 'Hidrost\u00e1tica, hidrodin\u00e1mica, ecuaci\u00f3n de Bernoulli.' },
+      { id: 'mecanica-de-materiales', title: 'Mec\u00e1nica de Materiales', icon: '\u2194', desc: 'Elasticidad, esfuerzo, deformaci\u00f3n y resistencia de materiales.' }
+    ],
+    moderna: [
+      { id: 'relatividad', title: 'Relatividad (Especial y General)', icon: '\u20f0', desc: 'Transformaciones de Lorentz, curvatura del espacio-tiempo.' },
+      { id: 'mecanica-cuantica', title: 'Mec\u00e1nica Cu\u00e1ntica', icon: '\u210f', desc: 'Ecuaci\u00f3n de Schr\u00f6dinger, \u00e1tomos y part\u00edculas.' },
+      { id: 'particulas-y-campos', title: 'F\u00edsica de Part\u00edculas y Campos', icon: '\u2a02', desc: 'Modelo est\u00e1ndar, cuarks, leptones y campos cu\u00e1nticos.' },
+      { id: 'materia-condensada', title: 'Materia Condensada', icon: '\u2b25', desc: 'S\u00f3lidos, semiconductores, superconductividad y magnetismo.' }
+    ],
+    matematica: [
+      { id: 'lagrangiana-hamiltoniana', title: 'Formulaci\u00f3n Lagrangiana y Hamiltoniana', icon: '\u2112', desc: 'Geometr\u00eda simpl\u00e9ctica, corchetes de Poisson.' },
+      { id: 'metodos-matematicos', title: 'M\u00e9todos Matem\u00e1ticos de la F\u00edsica', icon: '\u210b', desc: 'Espacios de Hilbert y operadores lineales.' },
+      { id: 'teoria-de-grupos', title: 'Teor\u00eda de Grupos en F\u00edsica', icon: '\u2295', desc: 'Grupos de Lie y simetr\u00edas en f\u00edsica.' },
+      { id: 'sistemas-dinamicos', title: 'Sistemas Din\u00e1micos y Caos', icon: '\u221e', desc: 'Ecuaciones no lineales, atractores y teor\u00eda del caos.' }
+    ]
+  };
+
   function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
   }
 
-  function renderMathContent() {
-    const mathPage = document.getElementById('page-matematicas');
-    if (!mathPage) return;
+  function countItems(data) {
+    let total = 0;
+    Object.keys(data).forEach(cat => { total += data[cat].length; });
+    return { total, cats: Object.keys(data).length };
+  }
+
+  function updateSubjectStats(pageId, data) {
+    const { total, cats } = countItems(data);
+    const stats = document.getElementById(`${pageId}-stats`);
+    if (!stats) return;
+    const notas = stats.querySelector(`#${pageId}-stat-notas`);
+    const ejercicios = stats.querySelector(`#${pageId}-stat-ejercicios`);
+    const categorias = stats.querySelector(`#${pageId}-stat-categorias`);
+    if (notas) notas.textContent = total;
+    if (ejercicios) ejercicios.textContent = total;
+    if (categorias) categorias.textContent = cats;
+  }
+
+  function renderSubjectContent(pageId, data) {
+    const page = document.getElementById(`page-${pageId}`);
+    if (!page) return;
 
     function buildCards(items, isFeatured) {
       return items.map(item => {
@@ -208,34 +252,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const desc = escapeHtml(item.desc);
         if (isFeatured) {
           return `
-            <div class="math-featured__card" data-id="${item.id}" data-category="${item.cat}">
-              <div class="math-featured__icon">${icon}</div>
-              <div class="math-featured__info">
+            <div class="subject-featured__card" data-id="${item.id}" data-category="${item.cat}">
+              <div class="subject-featured__icon">${icon}</div>
+              <div class="subject-featured__info">
                 <h4>${title}</h4>
                 <p>${desc}</p>
               </div>
             </div>`;
         }
         return `
-          <div class="math-note-card" data-id="${item.id}" data-category="${item.cat}">
-            <div class="math-note-card__icon">${icon}</div>
+          <div class="subject-note-card" data-id="${item.id}" data-category="${item.cat}">
+            <div class="subject-note-card__icon">${icon}</div>
             <h4>${title}</h4>
             <p>${desc}</p>
-            <span class="math-note-card__action">Abrir &rarr;</span>
+            <span class="subject-note-card__action">Abrir &rarr;</span>
           </div>`;
       }).join('');
     }
 
     const allItems = [];
-    Object.keys(MATH_DATA).forEach(cat => {
-      MATH_DATA[cat].forEach(item => {
+    Object.keys(data).forEach(cat => {
+      data[cat].forEach(item => {
         allItems.push({ ...item, cat });
       });
     });
 
     ['notas', 'ejercicios'].forEach(mode => {
-      const featured = document.getElementById(`math-featured-${mode}`);
-      const notes = document.getElementById(`math-notes-${mode}`);
+      const featured = document.getElementById(`${pageId}-featured-${mode}`);
+      const notes = document.getElementById(`${pageId}-notes-${mode}`);
       if (featured) {
         const featuredItems = allItems.slice(0, 3);
         featured.innerHTML = buildCards(featuredItems, true);
@@ -245,38 +289,19 @@ document.addEventListener('DOMContentLoaded', () => {
         notes.innerHTML = buildCards(shuffled, false);
       }
     });
+
+    updateSubjectStats(pageId, data);
   }
 
-  function animateMathStats() {
-    const stats = document.querySelectorAll('#page-matematicas .math-stat__number');
-    stats.forEach(stat => {
-      const target = parseInt(stat.dataset.target, 10);
-      let current = 0;
-      const step = Math.max(1, Math.ceil(target / 30));
-      const interval = setInterval(() => {
-        current += step;
-        if (current >= target) {
-          current = target;
-          clearInterval(interval);
-        }
-        stat.textContent = current;
-      }, 40);
-    });
-  }
-
-  function filterMathNotes(category) {
-    const mathPage = document.getElementById('page-matematicas');
-    const cards = mathPage.querySelectorAll('.math-note-card, .math-featured__card');
-    const catEls = mathPage.querySelectorAll('.math-category');
-
-    catEls.forEach(el => el.classList.toggle('active', el.dataset.category === category));
+  function filterSubjectNotes(pageId) {
+    const page = document.getElementById(`page-${pageId}`);
+    const cards = page.querySelectorAll('.subject-note-card, .subject-featured__card');
+    const catEls = page.querySelectorAll('.subject-category');
+    const active = page.querySelector('.subject-category.active');
+    const category = active ? active.dataset.category : null;
 
     cards.forEach(card => {
-      if (!category || card.dataset.category === category) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
+      card.style.display = (!category || card.dataset.category === category) ? '' : 'none';
     });
   }
 
@@ -417,7 +442,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSubjectCards();
       renderNovedadesCards();
       syncHardcodedCards();
-      renderMathContent();
+      renderSubjectContent('matematicas', MATH_DATA);
+      renderSubjectContent('fisica', PHY_DATA);
       applyGearVisibility();
     })
     .catch(() => {});
@@ -788,35 +814,41 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 3b - Math category card → filter notes
-    const mathCat = target.closest('.math-category');
-    if (mathCat) {
-      const category = mathCat.dataset.category;
-      filterMathNotes(category);
-      const catName = mathCat.querySelector('h3')?.textContent || category;
-      const page = 'matematicas';
-      const activeModeTab = document.querySelector('#page-matematicas .mode-tab.active');
+    // 3b - Subject category card → filter notes
+    const subjCat = target.closest('.subject-category');
+    if (subjCat) {
+      const category = subjCat.dataset.category;
+      const page = subjCat.closest('.page');
+      const pageId = page.id.replace('page-', '');
+      page.querySelectorAll('.subject-category').forEach(el => el.classList.remove('active'));
+      subjCat.classList.add('active');
+      filterSubjectNotes(pageId);
+      const activeModeTab = page.querySelector('.mode-tab.active');
       const mode = activeModeTab?.dataset.mode || 'notas';
-      window.history.replaceState(null, '', `#${page}/${mode}`);
+      window.history.replaceState(null, '', `#${pageId}/${mode}`);
       return;
     }
 
-    // 3c - Math note card → open modal
-    const noteCard = target.closest('.math-note-card, .math-featured__card');
+    // 3c - Subject note card → open modal
+    const noteCard = target.closest('.subject-note-card, .subject-featured__card');
     if (noteCard && !target.closest('.gear')) {
       const id = noteCard.dataset.id;
-      const cat = noteCard.dataset.category;
-      const items = MATH_DATA[cat] || [];
-      const item = items.find(i => i.id === id);
+      const page = noteCard.closest('.page');
+      const pageId = page.id.replace('page-', '');
+      const data = pageId === 'matematicas' ? MATH_DATA : (pageId === 'fisica' ? PHY_DATA : null);
+      if (!data) return;
+      let item = null;
+      for (const catKey of Object.keys(data)) {
+        item = data[catKey].find(i => i.id === id);
+        if (item) break;
+      }
       if (item) {
         openModal(item.title, item.desc + '\n\nContenido pendiente...');
-        const page = 'matematicas';
-        const activeModeTab = document.querySelector('#page-matematicas .mode-tab.active');
+        const activeModeTab = page.querySelector('.mode-tab.active');
         const mode = activeModeTab?.dataset.mode || 'notas';
-        const catEls = document.querySelectorAll('#page-matematicas .math-note-card, #page-matematicas .math-featured__card');
-        catEls.forEach(c => c.classList.remove('active-topic'));
+        page.querySelectorAll('.subject-note-card, .subject-featured__card').forEach(c => c.classList.remove('active-topic'));
         noteCard.classList.add('active-topic');
-        window.history.replaceState(null, '', `#${page}/${mode}/${id}`);
+        window.history.replaceState(null, '', `#${pageId}/${mode}/${id}`);
       }
       return;
     }
@@ -855,14 +887,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ============================================
-     Math Page — Search
+     Subject Page — Search
      ============================================ */
-  const mathSearchInput = document.getElementById('math-search-input');
-  if (mathSearchInput) {
-    mathSearchInput.addEventListener('input', () => {
-      const query = mathSearchInput.value.trim().toLowerCase();
-      const mathPage = document.getElementById('page-matematicas');
-      const cards = mathPage.querySelectorAll('.math-note-card, .math-featured__card');
+  function setupSubjectSearch(inputId, pageId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener('input', () => {
+      const query = input.value.trim().toLowerCase();
+      const page = document.getElementById(`page-${pageId}`);
+      const cards = page.querySelectorAll('.subject-note-card, .subject-featured__card');
       const hasQuery = query.length > 0;
       cards.forEach(card => {
         const title = card.querySelector('h4')?.textContent?.toLowerCase() || '';
@@ -871,28 +904,14 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.display = (!hasQuery || match) ? '' : 'none';
       });
       if (!hasQuery) {
-        mathPage.querySelectorAll('.math-category').forEach(el => el.classList.remove('active'));
+        page.querySelectorAll('.subject-category').forEach(el => el.classList.remove('active'));
+        filterSubjectNotes(pageId);
       }
     });
   }
 
-  /* ============================================
-     Math Page — Scroll observer for stats (re-trigger)
-     ============================================ */
-  if (typeof IntersectionObserver !== 'undefined') {
-    const mathPage = document.getElementById('page-matematicas');
-    const statsSection = mathPage?.querySelector('.math-stats');
-    if (statsSection) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            animateMathStats();
-          }
-        });
-      }, { threshold: 0.5 });
-      observer.observe(statsSection);
-    }
-  }
+  setupSubjectSearch('math-search-input', 'matematicas');
+  setupSubjectSearch('phy-search-input', 'fisica');
 
   /* ============================================
      Opacity slider
