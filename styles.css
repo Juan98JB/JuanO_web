@@ -324,65 +324,35 @@ button {
 }
 
 /* ============================================
-   Math Page — Hero
+   Math Page — Bar (Stats + Search)
    ============================================ */
-.math-hero {
-  position: relative;
-  overflow: hidden;
-  padding: 3rem 2rem;
-  margin-bottom: 2rem;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
-  border: 1px solid var(--border-color);
-  transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
-}
-
-.math-hero__pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.04;
-  background-image:
-    radial-gradient(circle at 20% 50%, var(--accent) 0.8px, transparent 0.8px),
-    radial-gradient(circle at 80% 20%, var(--accent) 0.8px, transparent 0.8px),
-    radial-gradient(circle at 40% 80%, var(--accent) 0.8px, transparent 0.8px),
-    radial-gradient(circle at 70% 60%, var(--accent) 0.8px, transparent 0.8px);
-  background-size: 60px 60px, 80px 80px, 100px 100px, 120px 120px;
-  pointer-events: none;
-}
-
-.math-hero__content {
-  position: relative;
-  z-index: 1;
-}
-
-.math-hero__title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.5px;
-}
-
-.math-hero__desc {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
+.math-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
-  line-height: 1.6;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-speed) ease;
 }
 
-.math-search {
-  position: relative;
-  max-width: 440px;
+.math-bar .math-search {
+  flex: 1;
+  min-width: 0;
+  max-width: 480px;
 }
 
 .math-search__input {
   width: 100%;
-  padding: 0.85rem 1.25rem;
-  border-radius: 12px;
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
   border: 1.5px solid var(--border-color);
   background: var(--input-bg);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: all var(--transition-speed) ease;
   outline: none;
 }
@@ -396,47 +366,43 @@ button {
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
-.math-hero__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  position: relative;
-  z-index: 1;
+.math-stat-group {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
 }
 
-.math-hero__stats .math-stat {
+.math-bar .math-stat {
   text-align: center;
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem 0.9rem;
   border-radius: 10px;
-  background: var(--bg-card);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   transition: all var(--transition-speed) ease;
+  min-width: 70px;
 }
 
-.math-hero__stats .math-stat:hover {
+.math-bar .math-stat:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .math-stat__number {
   display: block;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--accent);
   line-height: 1.2;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.1rem;
 }
 
 .math-stat__label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 /* ============================================
@@ -603,9 +569,26 @@ button {
 }
 
 /* ============================================
-   Math Page — Notes Grid
+   Math Page — Notes Grid (grouped by category)
    ============================================ */
 .math-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.math-subsection__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.math-subsection__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
@@ -696,21 +679,21 @@ button {
    Math Page — Responsive
    ============================================ */
 @media (max-width: 768px) {
-  .math-hero {
-    padding: 2rem 1.25rem;
+  .math-bar {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
   }
-  .math-hero__title {
-    font-size: 1.8rem;
+  .math-bar .math-search {
+    max-width: 100%;
   }
-  .math-hero__stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+  .math-stat-group {
+    width: 100%;
+    justify-content: center;
   }
-  .math-hero__stats .math-stat {
-    padding: 0.6rem 0.3rem;
-  }
-  .math-hero__stats .math-stat__number {
-    font-size: 1.2rem;
+  .math-bar .math-stat {
+    flex: 1;
+    min-width: 0;
   }
   .math-categories {
     grid-template-columns: 1fr;
@@ -718,17 +701,14 @@ button {
   .math-featured {
     grid-template-columns: 1fr;
   }
-  .math-notes {
+  .math-subsection__grid {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .math-notes {
+  .math-subsection__grid {
     grid-template-columns: 1fr;
-  }
-  .math-hero__title {
-    font-size: 1.5rem;
   }
 }
 
