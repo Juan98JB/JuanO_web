@@ -324,9 +324,9 @@ button {
 }
 
 /* ============================================
-   Subject Hero (Matemáticas / Física)
+   Math Page — Hero
    ============================================ */
-.subject-hero {
+.math-hero {
   position: relative;
   overflow: hidden;
   padding: 3rem 2rem;
@@ -337,7 +337,7 @@ button {
   transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
 }
 
-.subject-hero__pattern {
+.math-hero__pattern {
   position: absolute;
   inset: 0;
   opacity: 0.04;
@@ -350,12 +350,12 @@ button {
   pointer-events: none;
 }
 
-.subject-hero__content {
+.math-hero__content {
   position: relative;
   z-index: 1;
 }
 
-.subject-hero__title {
+.math-hero__title {
   font-size: 2.5rem;
   font-weight: 800;
   color: var(--text-primary);
@@ -363,19 +363,19 @@ button {
   letter-spacing: -0.5px;
 }
 
-.subject-hero__desc {
+.math-hero__desc {
   font-size: 1.1rem;
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.6;
 }
 
-.subject-search {
+.math-search {
   position: relative;
   max-width: 440px;
 }
 
-.subject-search__input {
+.math-search__input {
   width: 100%;
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
@@ -387,67 +387,26 @@ button {
   outline: none;
 }
 
-.subject-search__input::placeholder {
+.math-search__input::placeholder {
   color: var(--text-muted);
 }
 
-.subject-search__input:focus {
+.math-search__input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
-.subject-hero__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.subject-hero__stats .subject-stat {
-  text-align: center;
-  padding: 0.75rem 0.5rem;
-  border-radius: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-speed) ease;
-}
-
-.subject-hero__stats .subject-stat:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.subject-hero__stats .subject-stat__number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--accent);
-  line-height: 1.2;
-  margin-bottom: 0.15rem;
-}
-
-.subject-hero__stats .subject-stat__label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 /* ============================================
-   Subject Stats
+   Math Page — Stats
    ============================================ */
-.subject-stats {
+.math-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.subject-stat {
+.math-stat {
   text-align: center;
   padding: 1.5rem 1rem;
   border-radius: 12px;
@@ -456,13 +415,13 @@ button {
   transition: all var(--transition-speed) ease;
 }
 
-.subject-stat:hover {
+.math-stat:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.subject-stat__number {
+.math-stat__number {
   display: block;
   font-size: 2rem;
   font-weight: 800;
@@ -471,7 +430,7 @@ button {
   margin-bottom: 0.25rem;
 }
 
-.subject-stat__label {
+.math-stat__label {
   font-size: 0.85rem;
   color: var(--text-muted);
   font-weight: 500;
@@ -480,28 +439,28 @@ button {
 }
 
 /* ============================================
-   Subject Mode Tabs (compact)
+   Math Page — Mode Tabs (compact)
    ============================================ */
-.subject-mode-tabs {
+.math-mode-tabs {
   margin-bottom: 1.5rem !important;
 }
 
-.subject-mode-tabs .mode-tab {
+.math-mode-tabs .mode-tab {
   font-size: 0.8rem;
   padding: 0.5rem 1rem;
 }
 
 /* ============================================
-   Subject Category Cards
+   Math Page — Category Cards
    ============================================ */
-.subject-categories {
+.math-categories {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 2.5rem;
 }
 
-.subject-category {
+.math-category {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -513,18 +472,18 @@ button {
   transition: all var(--transition-speed) ease;
 }
 
-.subject-category:hover {
+.math-category:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-md);
   transform: translateY(-3px);
 }
 
-.subject-category.active {
+.math-category.active {
   border-color: var(--accent);
   background: var(--accent-light);
 }
 
-.subject-category__icon {
+.math-category__icon {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
@@ -539,26 +498,26 @@ button {
   transition: all var(--transition-speed) ease;
 }
 
-.subject-category:hover .subject-category__icon {
+.math-category:hover .math-category__icon {
   background: var(--accent);
   color: var(--btn-primary-text);
 }
 
-.subject-category__info h3 {
+.math-category__info h3 {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
-.subject-category__info p {
+.math-category__info p {
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.4;
   margin-bottom: 0.4rem;
 }
 
-.subject-category__count {
+.math-category__count {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--accent);
@@ -567,13 +526,13 @@ button {
 }
 
 /* ============================================
-   Subject Sections
+   Math Page — Sections
    ============================================ */
-.subject-section {
+.math-section {
   margin-bottom: 2.5rem;
 }
 
-.subject-section__title {
+.math-section__title {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -583,15 +542,15 @@ button {
 }
 
 /* ============================================
-   Subject Featured Cards
+   Math Page — Featured Cards
    ============================================ */
-.subject-featured {
+.math-featured {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
-.subject-featured__card {
+.math-featured__card {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -603,13 +562,13 @@ button {
   transition: all var(--transition-speed) ease;
 }
 
-.subject-featured__card:hover {
+.math-featured__card:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-.subject-featured__icon {
+.math-featured__icon {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -623,29 +582,29 @@ button {
   font-weight: 700;
 }
 
-.subject-featured__info h4 {
+.math-featured__info h4 {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.2rem;
 }
 
-.subject-featured__info p {
+.math-featured__info p {
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
 /* ============================================
-   Subject Notes Grid
+   Math Page — Notes Grid
    ============================================ */
-.subject-notes {
+.math-notes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
 }
 
-.subject-note-card {
+.math-note-card {
   padding: 1.15rem;
   border-radius: 10px;
   background: var(--bg-card);
@@ -654,19 +613,19 @@ button {
   transition: all var(--transition-speed) ease;
 }
 
-.subject-note-card:hover {
+.math-note-card:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
 
-.subject-note-card.active-topic {
+.math-note-card.active-topic {
   border-color: var(--accent);
   background: var(--accent-light);
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-.subject-note-card__icon {
+.math-note-card__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -680,26 +639,26 @@ button {
   margin-bottom: 0.6rem;
 }
 
-.subject-note-card:hover .subject-note-card__icon {
+.math-note-card:hover .math-note-card__icon {
   background: var(--accent);
   color: var(--btn-primary-text);
 }
 
-.subject-note-card h4 {
+.math-note-card h4 {
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.3rem;
 }
 
-.subject-note-card p {
+.math-note-card p {
   font-size: 0.78rem;
   color: var(--text-secondary);
   line-height: 1.4;
   margin-bottom: 0.6rem;
 }
 
-.subject-note-card__action {
+.math-note-card__action {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--accent);
@@ -709,11 +668,11 @@ button {
   transition: gap var(--transition-speed) ease;
 }
 
-.subject-note-card:hover .subject-note-card__action {
+.math-note-card:hover .math-note-card__action {
   gap: 0.5rem;
 }
 
-.subject-note-card__badge {
+.math-note-card__badge {
   display: inline-block;
   font-size: 0.65rem;
   font-weight: 600;
@@ -727,54 +686,54 @@ button {
 }
 
 /* ============================================
-   Subject Empty state
+   Math Page — Empty state
    ============================================ */
-.subject-empty {
+.math-empty {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--text-muted);
 }
 
-.subject-empty p {
+.math-empty p {
   font-size: 0.95rem;
 }
 
 /* ============================================
-   Subject Page Responsive
+   Math Page — Responsive
    ============================================ */
 @media (max-width: 768px) {
-  .subject-hero {
+  .math-hero {
     padding: 2rem 1.25rem;
   }
-  .subject-hero__title {
+  .math-hero__title {
     font-size: 1.8rem;
   }
-  .subject-stats {
+  .math-stats {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
   }
-  .subject-stat {
+  .math-stat {
     padding: 1rem 0.5rem;
   }
-  .subject-stat__number {
+  .math-stat__number {
     font-size: 1.5rem;
   }
-  .subject-categories {
+  .math-categories {
     grid-template-columns: 1fr;
   }
-  .subject-featured {
+  .math-featured {
     grid-template-columns: 1fr;
   }
-  .subject-notes {
+  .math-notes {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .subject-notes {
+  .math-notes {
     grid-template-columns: 1fr;
   }
-  .subject-hero__title {
+  .math-hero__title {
     font-size: 1.5rem;
   }
 }
