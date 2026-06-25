@@ -200,51 +200,85 @@
              PAGE: MATEM&Aacute;TICAS
              ============================== -->
         <section class="page" id="page-matematicas">
-            <div class="page-header">
-                <h2>Matem&aacute;ticas</h2>
-                <p>Notas, ejercicios y recursos de matem&aacute;ticas.</p>
+            <div class="math-hero">
+                <div class="math-hero__pattern"></div>
+                <div class="math-hero__content">
+                    <h2 class="math-hero__title">Matem&aacute;ticas</h2>
+                    <p class="math-hero__desc">Notas, ejercicios y recursos de matem&aacute;ticas.</p>
+                    <div class="math-search">
+                        <input class="math-search__input" type="text" placeholder="Buscar notas, ejercicios, temas..." id="math-search-input">
+                    </div>
+                </div>
             </div>
-            <div class="mode-tabs">
+
+            <div class="math-stats">
+                <div class="math-stat">
+                    <span class="math-stat__number" data-target="24">0</span>
+                    <span class="math-stat__label">Notas</span>
+                </div>
+                <div class="math-stat">
+                    <span class="math-stat__number" data-target="18">0</span>
+                    <span class="math-stat__label">Ejercicios</span>
+                </div>
+                <div class="math-stat">
+                    <span class="math-stat__number" data-target="3">0</span>
+                    <span class="math-stat__label">Categor&iacute;as</span>
+                </div>
+            </div>
+
+            <div class="mode-tabs math-mode-tabs">
                 <button class="mode-tab active" data-mode="notas">Notas</button>
                 <button class="mode-tab" data-mode="ejercicios">Ejercicios</button>
             </div>
-            <nav class="subject-nav">
-                <div class="subject-nav__dropdown">
-                    <button class="subject-nav__btn">Matem&aacute;ticas B&aacute;sicas&emsp;▾</button>
-                    <div class="subject-nav__menu">
-                        <a href="#" data-topic="teoria-de-conjuntos">Teor&iacute;a de Conjuntos</a>
-                        <a href="#" data-topic="algebra">&Aacute;lgebra (Elemental y Lineal)</a>
-                        <a href="#" data-topic="calculo">C&aacute;lculo</a>
-                        <a href="#" data-topic="geometria">Geometr&iacute;a Elemental y Anal&iacute;tica</a>
-                        <a href="#" data-topic="intro-edo">Intro. a las Ecuaciones Diferenciales</a>
-                        <a href="#" data-topic="intro-variable-compleja">Intro. a la Variable Compleja</a>
+
+            <div class="math-categories" id="math-categories">
+                <div class="math-category" data-category="basicas">
+                    <div class="math-category__icon">&sum;</div>
+                    <div class="math-category__info">
+                        <h3>Matem&aacute;ticas B&aacute;sicas</h3>
+                        <p>Teor&iacute;a de conjuntos, &aacute;lgebra, c&aacute;lculo y geometr&iacute;a.</p>
+                        <span class="math-category__count">6 temas</span>
                     </div>
                 </div>
-                <div class="subject-nav__dropdown">
-                    <button class="subject-nav__btn">Matem&aacute;ticas Avanzadas&emsp;▾</button>
-                    <div class="subject-nav__menu">
-                        <a href="#" data-topic="analisis-real">An&aacute;lisis Real</a>
-                        <a href="#" data-topic="teoria-de-la-medida">Teor&iacute;a de la Medida</a>
-                        <a href="#" data-topic="analisis-complejo">An&aacute;lisis Complejo</a>
-                        <a href="#" data-topic="topologia">Topolog&iacute;a</a>
-                        <a href="#" data-topic="geometria-diferencial">Geometr&iacute;a Diferencial</a>
-                        <a href="#" data-topic="edo-cualitativa">Ecuaciones Diferenciales (Teor&iacute;a Cualitativa)</a>
-                        <a href="#" data-topic="analisis-funcional">An&aacute;lisis Funcional</a>
+                <div class="math-category" data-category="avanzadas">
+                    <div class="math-category__icon">&int;</div>
+                    <div class="math-category__info">
+                        <h3>Matem&aacute;ticas Avanzadas</h3>
+                        <p>An&aacute;lisis real, complejo, topolog&iacute;a y geometr&iacute;a diferencial.</p>
+                        <span class="math-category__count">7 temas</span>
                     </div>
                 </div>
-                <div class="subject-nav__dropdown">
-                    <button class="subject-nav__btn">Matem&aacute;ticas Aplicadas&emsp;▾</button>
-                    <div class="subject-nav__menu">
-                        <a href="#" data-topic="matematicas-discretas">Matem&aacute;ticas Discretas</a>
-                        <a href="#" data-topic="optimizacion">Optimizaci&oacute;n (Prog. Lineal y No Lineal)</a>
-                        <a href="#" data-topic="io">Investigaci&oacute;n de Operaciones</a>
-                        <a href="#" data-topic="probabilidad-y-estadistica">Probabilidad y Estad&iacute;stica</a>
+                <div class="math-category" data-category="aplicadas">
+                    <div class="math-category__icon">&radic;</div>
+                    <div class="math-category__info">
+                        <h3>Matem&aacute;ticas Aplicadas</h3>
+                        <p>Discretas, optimizaci&oacute;n, investigaci&oacute;n de operaciones y estad&iacute;stica.</p>
+                        <span class="math-category__count">4 temas</span>
                     </div>
                 </div>
-            </nav>
+            </div>
+
             <div class="subject-content">
-                <div class="subject-mode active" data-mode="notas"></div>
-                <div class="subject-mode" data-mode="ejercicios"></div>
+                <div class="subject-mode active" data-mode="notas">
+                    <section class="math-section">
+                        <h3 class="math-section__title">Destacados</h3>
+                        <div class="math-featured" id="math-featured-notas"></div>
+                    </section>
+                    <section class="math-section">
+                        <h3 class="math-section__title">Todas las notas</h3>
+                        <div class="math-notes" id="math-notes-notas"></div>
+                    </section>
+                </div>
+                <div class="subject-mode" data-mode="ejercicios">
+                    <section class="math-section">
+                        <h3 class="math-section__title">Ejercicios destacados</h3>
+                        <div class="math-featured" id="math-featured-ejercicios"></div>
+                    </section>
+                    <section class="math-section">
+                        <h3 class="math-section__title">Todos los ejercicios</h3>
+                        <div class="math-notes" id="math-notes-ejercicios"></div>
+                    </section>
+                </div>
             </div>
         </section>
 
