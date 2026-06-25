@@ -86,9 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modeContent) modeContent.classList.add('active');
 
     document.querySelectorAll('.subject-nav__menu a').forEach(a => a.classList.remove('active-topic'));
+    document.querySelectorAll('.math-note-card, .math-featured__card').forEach(c => c.classList.remove('active-topic'));
+
     if (topic) {
       const topicLink = document.querySelector(`.subject-nav__menu a[data-topic="${topic}"]`);
       if (topicLink) topicLink.classList.add('active-topic');
+
+      const mathCard = document.querySelector(`.math-note-card[data-id="${topic}"], .math-featured__card[data-id="${topic}"]`);
+      if (mathCard) {
+        mathCard.classList.add('active-topic');
+        mathCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        filterMathNotes(mathCard.dataset.category);
+      }
     }
   }
 
@@ -131,8 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const mode = tab.dataset.mode;
       const page = tab.closest('.page');
       const pageId = page.id.replace('page-', '');
-      const activeTopic = page.querySelector('.subject-nav__menu a.active-topic');
-      const topic = activeTopic?.dataset.topic;
+      let activeTopic = page.querySelector('.subject-nav__menu a.active-topic');
+      let topic = activeTopic?.dataset.topic;
+      if (!topic) {
+        const activeCard = page.querySelector('.math-note-card.active-topic, .math-featured__card.active-topic');
+        topic = activeCard?.dataset.id;
+      }
       showPage(pageId, mode, topic);
       const hash = topic ? `#${pageId}/${mode}/${topic}` : `#${pageId}/${mode}`;
       window.history.replaceState(null, '', hash);
@@ -192,16 +205,110 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function cardBg(saved, item) {
-    const imgUrl = saved.imageUrl || (item && item.imageUrl);
-    if (imgUrl) {
-      const o = saved.opacity != null ? saved.opacity : 1;
-      const overlay = Math.round((1 - o) * 0.6 * 100) / 100;
-      const bg = `url(${imgUrl}) center / cover no-repeat`;
-      return overlay > 0 ? `linear-gradient(rgba(0,0,0,${overlay}), rgba(0,0,0,${overlay})), ${bg}` : bg;
-    }
-    return saved.gradient || (item && item.gradient) || '';
+  const MATH_DATA = {
+    basicas: [
+      { id: 'teoria-de-conjuntos', title: 'Teor\u00eda de Conjuntos', icon: '\u2282', desc: 'Conjuntos, operaciones, relaciones y funciones.' },
+      { id: 'algebra', title: '\u00c1lgebra (Elemental y Lineal)', icon: '\u2395', desc: 'Vectores, matrices, espacios vectoriales y transformaciones.' },
+      { id: 'calculo', title: 'C\u00e1lculo', icon: '\u222b', desc: 'L\u00edmites, derivadas, integrales y aplicaciones.' },
+      { id: 'geometria', title: 'Geometr\u00eda Elemental y Anal\u00edtica', icon: '\u25b3', desc: 'Geometr\u00eda euclidiana, coordenadas y secciones c\u00f3nicas.' },
+      { id: 'intro-edo', title: 'Intro. a las Ecuaciones Diferenciales', icon: '\u2202', desc: 'EDO, m\u00e9todos de soluci\u00f3n y aplicaciones.' },
+      { id: 'intro-variable-compleja', title: 'Intro. a la Variable Compleja', icon: '\u2102', desc: 'N\u00fameros complejos, funciones anal\u00edticas e integraci\u00f3n.' }
+    ],
+    avanzadas: [
+      { id: 'analisis-real', title: 'An\u00e1lisis Real', icon: '\u211d', desc: 'Sucesiones, continuidad, diferenciaci\u00f3n e integraci\u00f3n de Riemann.' },
+      { id: 'teoria-de-la-medida', title: 'Teor\u00eda de la Medida', icon: '\u03bc', desc: 'Medida, integraci\u00f3n de Lebesgue y espacios de medida.' },
+      { id: 'analisis-complejo', title: 'An\u00e1lisis Complejo', icon: '\u210b', desc: 'Funciones holomorfas, series de Laurent y teorema de residuos.' },
+      { id: 'topologia', title: 'Topolog\u00eda', icon: '\u221e', desc: 'Espacios topol\u00f3gicos, continuidad, compacidad y conexidad.' },
+      { id: 'geometria-diferencial', title: 'Geometr\u00eda Diferencial', icon: '\u03b3', desc: 'Variedades, tensores, curvatura y conexiones.' },
+      { id: 'edo-cualitativa', title: 'Ecuaciones Diferenciales (Teor\u00eda Cualitativa)', icon: '\u2202', desc: 'Sistemas din\u00e1micos, estabilidad y bifurcaciones.' },
+      { id: 'analisis-funcional', title: 'An\u00e1lisis Funcional', icon: '\u2113', desc: 'Espacios de Banach, Hilbert y operadores lineales.' }
+    ],
+    aplicadas: [
+      { id: 'matematicas-discretas', title: 'Matem\u00e1ticas Discretas', icon: '\u2261', desc: 'Combinatoria, grafos, recursi\u00f3n y estructuras discretas.' },
+      { id: 'optimizacion', title: 'Optimizaci\u00f3n (Prog. Lineal y No Lineal)', icon: '\u2197', desc: 'Programaci\u00f3n lineal, convexa y m\u00e9todos num\u00e9ricos.' },
+      { id: 'io', title: 'Investigaci\u00f3n de Operaciones', icon: '\u25c6', desc: 'Modelado, simulaci\u00f3n y optimizaci\u00f3n de sistemas.' },
+      { id: 'probabilidad-y-estadistica', title: 'Probabilidad y Estad\u00edstica', icon: '\u03c3', desc: 'Distribuciones, inferencia, pruebas de hip\u00f3tesis y regresi\u00f3n.' }
+    ]
+  };
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
   }
+
+  function renderMathContent() {
+    const page = document.getElementById('page-matematicas');
+    if (!page) return;
+
+    function buildCards(items, isFeatured) {
+      return items.map(item => {
+        const icon = escapeHtml(item.icon);
+        const title = escapeHtml(item.title);
+        const desc = escapeHtml(item.desc);
+        if (isFeatured) {
+          return `
+            <div class="math-featured__card" data-id="${item.id}" data-category="${item.cat}">
+              <div class="math-featured__icon">${icon}</div>
+              <div class="math-featured__info">
+                <h4>${title}</h4>
+                <p>${desc}</p>
+              </div>
+            </div>`;
+        }
+        return `
+          <div class="math-note-card" data-id="${item.id}" data-category="${item.cat}">
+            <div class="math-note-card__icon">${icon}</div>
+            <h4>${title}</h4>
+            <p>${desc}</p>
+            <span class="math-note-card__action">Abrir &rarr;</span>
+          </div>`;
+      }).join('');
+    }
+
+    const allItems = [];
+    Object.keys(MATH_DATA).forEach(cat => {
+      MATH_DATA[cat].forEach(item => {
+        allItems.push({ ...item, cat });
+      });
+    });
+
+    const total = allItems.length;
+    const cats = Object.keys(MATH_DATA).length;
+    const notasEl = document.getElementById('math-stat-notas');
+    const ejerEl = document.getElementById('math-stat-ejercicios');
+    const catsEl = document.getElementById('math-stat-categorias');
+    if (notasEl) notasEl.textContent = total;
+    if (ejerEl) ejerEl.textContent = total;
+    if (catsEl) catsEl.textContent = cats;
+
+    ['notas', 'ejercicios'].forEach(mode => {
+      const featured = document.getElementById(`math-featured-${mode}`);
+      const notes = document.getElementById(`math-notes-${mode}`);
+      if (featured) {
+        featured.innerHTML = buildCards(allItems.slice(0, 3), true);
+      }
+      if (notes) {
+        notes.innerHTML = buildCards([...allItems].sort(() => Math.random() - 0.5), false);
+      }
+    });
+  }
+
+  function filterMathNotes(category) {
+    const page = document.getElementById('page-matematicas');
+    const cards = page.querySelectorAll('.math-note-card, .math-featured__card');
+    const catEls = page.querySelectorAll('.math-category');
+    catEls.forEach(el => el.classList.remove('active'));
+    if (category) {
+      const active = page.querySelector(`.math-category[data-category="${category}"]`);
+      if (active) active.classList.add('active');
+    }
+    cards.forEach(card => {
+      card.style.display = (!category || card.dataset.category === category) ? '' : 'none';
+    });
+  }
+
+  function cardBg(saved, item) {
 
   function renderNovedadesCards() {
     const container = document.getElementById('novedades-cards');
@@ -290,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSubjectCards();
       renderNovedadesCards();
       syncHardcodedCards();
+      renderMathContent();
       applyGearVisibility();
     })
     .catch(() => {});
@@ -660,6 +768,39 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // 3b - Math category card → filter notes
+    const mathCat = target.closest('.math-category');
+    if (mathCat) {
+      const category = mathCat.dataset.category;
+      const page = document.getElementById('page-matematicas');
+      page.querySelectorAll('.math-category').forEach(el => el.classList.remove('active'));
+      mathCat.classList.add('active');
+      filterMathNotes(category);
+      const activeModeTab = page.querySelector('.mode-tab.active');
+      const mode = activeModeTab?.dataset.mode || 'notas';
+      window.history.replaceState(null, '', `#matematicas/${mode}`);
+      return;
+    }
+
+    // 3c - Math note/featured card → open modal
+    const mathCard = target.closest('.math-note-card, .math-featured__card');
+    if (mathCard && !target.closest('.gear')) {
+      const id = mathCard.dataset.id;
+      const cat = mathCard.dataset.category;
+      const items = MATH_DATA[cat] || [];
+      const item = items.find(i => i.id === id);
+      if (item) {
+        openModal(item.title, item.desc + '\n\nContenido pendiente...');
+        const page = document.getElementById('page-matematicas');
+        const modeTab = page.querySelector('.mode-tab.active');
+        const mode = modeTab?.dataset.mode || 'notas';
+        page.querySelectorAll('.math-note-card, .math-featured__card').forEach(c => c.classList.remove('active-topic'));
+        mathCard.classList.add('active-topic');
+        window.history.replaceState(null, '', `#matematicas/${mode}/${id}`);
+      }
+      return;
+    }
+
     // 4 - Card front → navigate to URL (only when NOT flipped)
     const subcard = target.closest('.subcard');
     if (subcard && !subcard.classList.contains('flipped')) {
@@ -727,6 +868,28 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+  /* ============================================
+     Math Page — Search
+     ============================================ */
+  const mathSearch = document.getElementById('math-search-input');
+  if (mathSearch) {
+    mathSearch.addEventListener('input', () => {
+      const query = mathSearch.value.trim().toLowerCase();
+      const page = document.getElementById('page-matematicas');
+      const cards = page.querySelectorAll('.math-note-card, .math-featured__card');
+      if (query.length === 0) {
+        cards.forEach(c => c.style.display = '');
+        page.querySelectorAll('.math-category').forEach(el => el.classList.remove('active'));
+        return;
+      }
+      cards.forEach(card => {
+        const title = card.querySelector('h4')?.textContent?.toLowerCase() || '';
+        const desc = card.querySelector('p')?.textContent?.toLowerCase() || '';
+        card.style.display = (title.includes(query) || desc.includes(query)) ? '' : 'none';
+      });
+    });
+  }
 
   /* ============================================
      Reset form to original data
