@@ -331,7 +331,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function cardBg(saved, item) {
-    if (saved.imageUrl) return `linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)`;
+    const imgUrl = saved.imageUrl || item.imageUrl;
+    if (imgUrl) {
+      const o = saved.opacity != null ? saved.opacity : (item.opacity != null ? item.opacity : 1);
+      const overlay = Math.round((1 - o) * 0.6 * 100) / 100;
+      if (overlay > 0) {
+        return `linear-gradient(rgba(0,0,0,${overlay}), rgba(0,0,0,${overlay})), url(${imgUrl}) center / cover no-repeat`;
+      }
+      return `url(${imgUrl}) center / cover no-repeat`;
+    }
     return saved.gradient || item.gradient || 'linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)';
   }
 
