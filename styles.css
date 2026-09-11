@@ -1291,9 +1291,129 @@ main {
 }
 
 /* ============================================
+   Book Layout (Online Book for Math)
+   ============================================ */
+.book-layout {
+  display: flex;
+  gap: 2rem;
+  min-height: calc(100vh - 120px);
+  margin-top: 1rem;
+}
+
+.book-sidebar {
+  flex: 0 0 250px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.book-back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-speed);
+}
+
+.book-back-btn:hover {
+  color: var(--accent-hover);
+}
+
+.book-sidebar h3 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.book-toc {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.book-toc li {
+  margin-bottom: 0.5rem;
+}
+
+.book-toc a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  display: block;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.book-toc a:hover, .book-toc li.active a {
+  background: var(--bg-hover);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.book-content-area {
+  flex: 1;
+  background: var(--bg-secondary);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.book-content {
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+.book-content h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.5rem;
+}
+
+.book-content h2 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.book-content p {
+  margin-bottom: 1rem;
+}
+
+/* ============================================
    Responsive Design
    ============================================ */
 @media (max-width: 1024px) {
+  .book-layout {
+    flex-direction: column;
+  }
+  .book-sidebar {
+    flex: none;
+    width: 100%;
+    position: static;
+    max-height: 300px;
+  }
+
   .presentation_panel {
     flex: 0 0 65%;
   }

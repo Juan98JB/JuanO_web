@@ -809,6 +809,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const category = mathCat.dataset.category;
       const page = mathCat.closest('.page');
       const pageId = page.id.replace('page-', '');
+      
+      // Interceptar clic en Matemáticas Básicas para ir al libro online
+      if (pageId === 'matematicas' && category === 'basicas') {
+        showPage('libro-basicas');
+        window.history.replaceState(null, '', '#libro-basicas');
+        if (window.MathJax) {
+          MathJax.typesetPromise();
+        }
+        return;
+      }
+
       page.querySelectorAll('.math-category').forEach(el => el.classList.remove('active'));
       mathCat.classList.add('active');
       filterNotesByCategory(pageId, category);
@@ -846,6 +857,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (url && url.trim() !== '') {
         window.open(url.trim(), '_blank', 'noopener,noreferrer');
       }
+    }
+
+    // 5 - Book back button
+    if (target.closest('.book-back-btn')) {
+      showPage('matematicas');
+      window.history.replaceState(null, '', '#matematicas');
+      return;
     }
   });
 
