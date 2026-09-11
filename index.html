@@ -398,35 +398,19 @@
         </section>
 
         <!-- ==============================
-             PAGE: LIBRO ONLINE (Matemáticas Básicas)
+             PAGE: LIBRO ONLINE
              ============================== -->
-        <section class="page" id="page-libro-basicas">
+        <section class="page" id="page-libro">
             <div class="book-layout">
                 <aside class="book-sidebar">
-                    <button class="book-back-btn">&larr; Volver a Matemáticas</button>
-                    <h3>Matemáticas Básicas</h3>
-                    <ul class="book-toc">
-                        <li class="active"><a href="#cap1">Capítulo 1: Teoría de Conjuntos</a></li>
-                        <li><a href="#cap2">Capítulo 2: Álgebra</a></li>
-                        <li><a href="#cap3">Capítulo 3: Cálculo</a></li>
+                    <button class="book-back-btn">&larr; Volver</button>
+                    <h3 id="book-title">Libro</h3>
+                    <ul class="book-toc" id="book-toc">
+                        <!-- Generado dinámicamente -->
                     </ul>
                 </aside>
-                <div class="book-content-area">
-                    <div class="book-content" id="cap1">
-                        <h1>Capítulo 1: Teoría de Conjuntos</h1>
-                        <p>Este es un ejemplo de contenido en LaTeX. Podemos definir un conjunto de la siguiente manera:</p>
-                        <p>
-                            Sea $A$ un conjunto. Decimos que $x \in A$ si $x$ es un elemento de $A$.
-                        </p>
-                        <p>
-                            La unión de dos conjuntos $A$ y $B$ se denota como $A \cup B$ y se define como:
-                            $$ A \cup B = \{ x \mid x \in A \lor x \in B \} $$
-                        </p>
-                        <p>
-                            La intersección se denota como $A \cap B$:
-                            $$ A \cap B = \{ x \mid x \in A \land x \in B \} $$
-                        </p>
-                    </div>
+                <div class="book-content-area" id="book-content-container">
+                    <!-- Generado dinámicamente -->
                 </div>
             </div>
         </section>

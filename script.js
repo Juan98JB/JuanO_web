@@ -132,6 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const { page: initialPage, mode: initialMode, topic: initialTopic } = parseHash();
+  if (initialPage === 'libro' && initialTopic) {
+    const [subPageId, cat] = initialTopic.split('/');
+    if (subPageId && cat) renderBook(subPageId, cat);
+  }
   showPage(initialPage || 'novedades', initialMode, initialTopic);
 
   /* ============================================
@@ -308,6 +312,74 @@ document.addEventListener('DOMContentLoaded', () => {
         notes.innerHTML = grouped;
       }
     });
+  }
+
+  function renderBook(pageId, category) {
+    const data = pageId === 'fisica' ? PHY_DATA : MATH_DATA;
+    const items = data[category] || [];
+    const local = loadLocalData();
+
+    const labels = {
+      matematicas: { basicas: 'Matemáticas Básicas', avanzadas: 'Matemáticas Avanzadas', aplicadas: 'Matemáticas Aplicadas' },
+      fisica: { clasica: 'Física Clásica', moderna: 'Física Moderna', matematica: 'Física Matemática' }
+    };
+    const titleText = labels[pageId]?.[category] || category;
+
+    document.getElementById('book-title').textContent = titleText;
+    
+    const tocEl = document.getElementById('book-toc');
+    const contentEl = document.getElementById('book-content-container');
+    
+    let tocHTML = '';
+    let contentHTML = '';
+
+    items.forEach((item, idx) => {
+      const saved = local[item.id] || {};
+      let savedContent = saved.content || item.content || '';
+      if (!savedContent.trim()) {
+        savedContent = `<p>Contenido de <strong>${item.title}</strong> pendiente...</p>`;
+      } else {
+        // Simple line break to <br> if not using proper HTML/Markdown, but LaTeX usually handles its own blocks.
+        // Assuming it's HTML with LaTeX mixed.
+      }
+      
+      tocHTML += `<li class="${idx === 0 ? 'active' : ''}"><a href="#cap-${item.id}">${item.title}</a></li>`;
+      
+      contentHTML += `
+        <div class="book-content" id="cap-${item.id}" style="${idx === 0 ? '' : 'display: none;'}">
+            <h1>${item.title}</h1>
+            ${savedContent}
+        </div>
+      `;
+    });
+
+    tocEl.innerHTML = tocHTML;
+    contentEl.innerHTML = contentHTML;
+
+    // Attach events for TOC
+    const tocLinks = tocEl.querySelectorAll('a');
+    tocLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        tocEl.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+        link.parentElement.classList.add('active');
+        
+        const targetId = link.getAttribute('href').substring(1);
+        contentEl.querySelectorAll('.book-content').forEach(div => div.style.display = 'none');
+        document.getElementById(targetId).style.display = 'block';
+
+        if (window.MathJax) {
+          MathJax.typesetPromise();
+        }
+      });
+    });
+
+    // Store current pageId to know where to go back
+    const backBtn = document.querySelector('.book-back-btn');
+    if (backBtn) {
+      backBtn.dataset.backTo = pageId;
+      backBtn.innerHTML = `&larr; Volver a ${pageId === 'fisica' ? 'Física' : 'Matemáticas'}`;
+    }
   }
 
   function filterNotesByCategory(pageId, category) {
@@ -803,29 +875,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 3b - Math/Fisica category card → filter notes
+    // 3b - Math/Fisica category card → open online book
     const mathCat = target.closest('.math-category');
     if (mathCat) {
       const category = mathCat.dataset.category;
       const page = mathCat.closest('.page');
       const pageId = page.id.replace('page-', '');
       
-      // Interceptar clic en Matemáticas Básicas para ir al libro online
-      if (pageId === 'matematicas' && category === 'basicas') {
-        showPage('libro-basicas');
-        window.history.replaceState(null, '', '#libro-basicas');
-        if (window.MathJax) {
-          MathJax.typesetPromise();
-        }
-        return;
+      // Ir a la vista tipo libro para cualquier categoría
+      renderBook(pageId, category);
+      showPage('libro');
+      window.history.replaceState(null, '', `#libro/${pageId}/${category}`);
+      if (window.MathJax) {
+        MathJax.typesetPromise();
       }
-
-      page.querySelectorAll('.math-category').forEach(el => el.classList.remove('active'));
-      mathCat.classList.add('active');
-      filterNotesByCategory(pageId, category);
-      const activeModeTab = page.querySelector('.mode-tab.active');
-      const mode = activeModeTab?.dataset.mode || 'notas';
-      window.history.replaceState(null, '', `#${pageId}/${mode}`);
       return;
     }
 
@@ -860,9 +923,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5 - Book back button
-    if (target.closest('.book-back-btn')) {
-      showPage('matematicas');
-      window.history.replaceState(null, '', '#matematicas');
+    const backBtn = target.closest('.book-back-btn');
+    if (backBtn) {
+      const targetPage = backBtn.dataset.backTo || 'matematicas';
+      showPage(targetPage);
+      window.history.replaceState(null, '', `#${targetPage}`);
       return;
     }
   });
