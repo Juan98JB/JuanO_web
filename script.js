@@ -305,14 +305,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const prefix = pageId === 'matematicas' ? 'math' : 'phy';
 
+    const availableNotes = loadNotes().filter(note => isAdmin() || note.status === 'published');
     const allItems = [];
     Object.keys(data).forEach(cat => {
       data[cat].forEach(item => {
-        const note = loadNotes().find(savedNote => savedNote.id === item.id && savedNote.subject === pageId);
+        const note = availableNotes.find(savedNote => savedNote.id === item.id && savedNote.subject === pageId);
         allItems.push({ ...item, ...(note || {}), cat });
       });
     });
-    loadNotes().filter(note => note.subject === pageId).forEach(note => {
+    availableNotes.filter(note => note.subject === pageId).forEach(note => {
       if (!allItems.some(item => item.id === note.id)) allItems.push({ ...note, cat: note.category });
     });
 
@@ -350,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderBook(pageId, category) {
     const data = pageId === 'fisica' ? PHY_DATA : MATH_DATA;
     const items = data[category] || [];
-    const notes = loadNotes().filter(note => note.subject === pageId && note.category === category);
+    const notes = loadNotes().filter(note => (isAdmin() || note.status === 'published') && note.subject === pageId && note.category === category);
     const labels = {
       matematicas: { basicas: 'Matemáticas Básicas', avanzadas: 'Matemáticas Avanzadas', aplicadas: 'Matemáticas Aplicadas' },
       fisica: { clasica: 'Física Clásica', moderna: 'Física Moderna', matematica: 'Física Matemática' }
@@ -550,127 +551,393 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  function renderAdminNotesList() {
+  /* ============================================
+     Visual notes editor
+     ============================================ */
+  const NOTE_CATEGORIES = {
+    matematicas: [
+      ['basicas', 'Matemáticas Básicas'], ['avanzadas', 'Matemáticas Avanzadas'], ['aplicadas', 'Matemáticas Aplicadas']
+    ],
+    fisica: [
+      ['clasica', 'Física Clásica'], ['moderna', 'Física Moderna'], ['matematica', 'Física Matemática']
+    ]
+  };
+  const NODE_CHILD_TYPES = { part: 'chapter', chapter: 'section', section: 'subsection' };
+  const NODE_LABELS = { part: 'Parte', chapter: 'Capítulo', section: 'Sección', subsection: 'Subsección' };
+  let visualEditorNote = null;
+  let visualSelectedPath = [0];
+  let visualEditorMode = 'visual';
+  let visualSaveTimer = null;
+  let visualPreviewTimer = null;
+
+  function cloneNote(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function visualNodeAt(path = visualSelectedPath) {
+    let nodes = visualEditorNote?.content || [];
+    let node = null;
+    for (const index of path) {
+      node = nodes[index];
+      if (!node) return null;
+      nodes = node.children || [];
+    }
+    return node;
+  }
+
+  function visualNodeList(path) {
+    if (path.length === 1) return visualEditorNote.content;
+    const parent = visualNodeAt(path.slice(0, -1));
+    parent.children ||= [];
+    return parent.children;
+  }
+
+  function renderCategoryOptions(subject, selected) {
+    const select = document.getElementById('note-category-input');
+    const options = NOTE_CATEGORIES[subject] || [];
+    select.innerHTML = options.map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+    select.value = options.some(([value]) => value === selected) ? selected : options[0]?.[0];
+  }
+
+  function renderVisualNotesList() {
     const list = document.getElementById('admin-notes-list');
     if (!list) return;
-    list.innerHTML = loadNotes().map(note => `<button type="button" class="admin-note-item ${note.id === activeNoteId ? 'active' : ''}" data-note-id="${escapeHtml(note.id)}"><strong>${escapeHtml(note.title)}</strong><small>${escapeHtml(note.subject)} / ${escapeHtml(note.category)}</small></button>`).join('');
+    const query = document.getElementById('admin-notes-search')?.value.trim().toLowerCase() || '';
+    const notes = loadNotes().filter(note => `${note.title} ${note.desc} ${(note.tags || []).join(' ')}`.toLowerCase().includes(query));
+    list.innerHTML = notes.map(note => `
+      <button type="button" class="admin-note-item ${note.id === activeNoteId ? 'active' : ''}" data-note-id="${escapeHtml(note.id)}">
+        <strong>${escapeHtml(note.title)}</strong>
+        <small>${escapeHtml(note.subject)} / ${escapeHtml(note.category)}</small>
+        <span class="note-status ${note.status || 'draft'}">${note.status === 'published' ? 'Publicada' : 'Borrador'}</span>
+      </button>`).join('') || '<p class="admin-empty">No se encontraron notas.</p>';
   }
 
-  function fillNoteEditor(note) {
-    activeNoteId = note.id;
-    document.getElementById('note-id-input').value = note.id;
-    document.getElementById('note-title-input').value = note.title || '';
-    document.getElementById('note-subject-input').value = note.subject || 'matematicas';
-    document.getElementById('note-category-input').value = note.category || 'basicas';
-    document.getElementById('note-desc-input').value = note.desc || '';
-    document.getElementById('note-tags-input').value = (note.tags || []).join(', ');
-    document.getElementById('note-content-input').value = JSON.stringify(note.content || [], null, 2);
-    document.getElementById('note-editor-status').textContent = '';
-    renderAdminNotesList();
+  function syncVisualMetadata() {
+    if (!visualEditorNote) return;
+    visualEditorNote.title = document.getElementById('note-title-input').value.trim() || 'Nueva nota';
+    visualEditorNote.subject = document.getElementById('note-subject-input').value;
+    visualEditorNote.category = document.getElementById('note-category-input').value;
+    visualEditorNote.status = document.getElementById('note-status-input').value;
+    visualEditorNote.desc = document.getElementById('note-desc-input').value.trim();
+    visualEditorNote.tags = document.getElementById('note-tags-input').value.split(',').map(tag => tag.trim()).filter(Boolean);
+    visualEditorNote.slug = slugify(visualEditorNote.title);
+    visualEditorNote.updatedAt = new Date().toISOString().slice(0, 10);
   }
 
-  function openNotesAdmin() {
-    const overlay = document.getElementById('notes-admin-overlay');
-    if (!overlay) return;
-    const notes = loadNotes();
-    fillNoteEditor(notes[0] || emptyNote());
-    overlay.classList.add('open');
-    overlay.setAttribute('aria-hidden', 'false');
+  function saveVisualNote(message = 'Guardado localmente') {
+    if (!visualEditorNote) return;
+    syncVisualMetadata();
+    const notes = loadNotes().filter(note => note.id !== visualEditorNote.id);
+    notes.push(cloneNote(visualEditorNote));
+    saveNotes(notes);
+    activeNoteId = visualEditorNote.id;
+    renderVisualNotesList();
+    document.getElementById('note-editor-status').textContent = message;
+    renderSubjectContent('matematicas', MATH_DATA);
+    renderSubjectContent('fisica', PHY_DATA);
   }
 
-  function closeNotesAdmin() {
-    const overlay = document.getElementById('notes-admin-overlay');
-    if (!overlay) return;
-    overlay.classList.remove('open');
-    overlay.setAttribute('aria-hidden', 'true');
+  function markVisualEditorDirty() {
+    document.getElementById('note-editor-status').textContent = 'Guardando...';
+    clearTimeout(visualSaveTimer);
+    visualSaveTimer = setTimeout(() => saveVisualNote(), 700);
+    scheduleVisualPreview();
   }
 
-  document.querySelector('.notes-admin-btn')?.addEventListener('click', openNotesAdmin);
-  document.querySelector('.notes-admin-close')?.addEventListener('click', closeNotesAdmin);
-  document.querySelector('.notes-admin-overlay')?.addEventListener('click', e => {
-    if (e.target.id === 'notes-admin-overlay') closeNotesAdmin();
-  });
-  document.querySelector('.notes-new-btn')?.addEventListener('click', () => fillNoteEditor(emptyNote()));
-  document.getElementById('admin-notes-list')?.addEventListener('click', e => {
-    const button = e.target.closest('[data-note-id]');
-    if (button) fillNoteEditor(noteById(button.dataset.noteId));
-  });
-  function appendStructureItem(type) {
-    const input = document.getElementById('note-content-input');
-    let tree;
-    try { tree = JSON.parse(input.value || '[]'); } catch { alert('Corrige primero el JSON de la nota.'); return; }
-    const title = type === 'latex' ? 'Ecuación' : (prompt(`Título de la ${type}:`) || '').trim();
-    if (!title && type !== 'latex') return;
-    if (type === 'part') tree.push({ type, title, children: [] });
-    if (type === 'chapter') {
-      const parent = [...tree].reverse().find(node => node.type === 'part');
-      if (!parent) return alert('Crea primero una parte.');
-      (parent.children ||= []).push({ type, title, children: [] });
-    }
-    if (type === 'section') {
-      let parent;
-      tree.forEach(part => (part.children || []).forEach(chapter => { if (chapter.type === 'chapter') parent = chapter; }));
-      if (!parent) return alert('Crea primero un capítulo.');
-      (parent.children ||= []).push({ type, title, children: [] });
-    }
-    if (type === 'subsection') {
-      let parent;
-      tree.forEach(part => (part.children || []).forEach(chapter => (chapter.children || []).forEach(section => { if (section.type === 'section') parent = section; })));
-      if (!parent) return alert('Crea primero una sección.');
-      (parent.children ||= []).push({ type, title, blocks: [] });
-    }
-    if (type === 'latex') {
-      let parent;
-      tree.forEach(part => (part.children || []).forEach(chapter => (chapter.children || []).forEach(section => (section.children || []).forEach(subsection => { if (subsection.type === 'subsection') parent = subsection; }))));
-      if (!parent) return alert('Crea primero una subsección.');
-      (parent.blocks ||= []).push({ type, content: '$$\\n\\n$$' });
-    }
-    input.value = JSON.stringify(tree, null, 2);
+  function outlineHtml(nodes, parentPath = []) {
+    return nodes.map((node, index) => {
+      const path = [...parentPath, index];
+      const pathValue = path.join('.');
+      const selected = pathValue === visualSelectedPath.join('.') ? 'active' : '';
+      const children = node.children?.length ? `<div class="outline-children">${outlineHtml(node.children, path)}</div>` : '';
+      return `<div class="outline-node"><button type="button" class="outline-node-btn ${selected}" data-node-path="${pathValue}"><span>${NODE_LABELS[node.type] || node.type}</span><strong>${escapeHtml(node.title || 'Sin título')}</strong></button>${children}</div>`;
+    }).join('');
   }
-  document.querySelector('.note-builder-toolbar')?.addEventListener('click', e => {
-    const button = e.target.closest('[data-add-structure]');
-    if (button) appendStructureItem(button.dataset.addStructure);
-  });
-  document.getElementById('note-editor-form')?.addEventListener('submit', e => {
-    e.preventDefault();
-    const status = document.getElementById('note-editor-status');
-    let content;
-    try {
-      content = JSON.parse(document.getElementById('note-content-input').value || '[]');
-      if (!Array.isArray(content)) throw new Error('El contenido debe ser un arreglo JSON.');
-    } catch (error) {
-      status.textContent = `Error en la estructura: ${error.message}`;
+
+  function renderVisualOutline() {
+    const outline = document.getElementById('note-outline');
+    if (!outline || !visualEditorNote) return;
+    outline.innerHTML = visualEditorNote.content.length ? outlineHtml(visualEditorNote.content) : '<p class="admin-empty">Añade una parte para comenzar.</p>';
+  }
+
+  function blocksToSource(blocks) {
+    return (blocks || []).map(block => `% @${block.type}${block.type === 'code' ? ` ${block.language || 'text'}` : ''}\n${block.content || ''}`).join('\n\n');
+  }
+
+  function sourceToBlocks(source) {
+    const blocks = [];
+    const directive = /^% @(text|latex|quote|code)(?:\s+([^\s]+))?\s*$/gm;
+    const matches = [...source.matchAll(directive)];
+    if (!matches.length) return source.trim() ? [{ type: 'latex', content: source.trim() }] : [];
+    matches.forEach((match, index) => {
+      const start = match.index + match[0].length;
+      const end = matches[index + 1]?.index ?? source.length;
+      const block = { type: match[1], content: source.slice(start, end).trim() };
+      if (block.type === 'code') block.language = match[2] || 'text';
+      blocks.push(block);
+    });
+    return blocks;
+  }
+
+  function visualBlockHtml(block, index) {
+    const language = block.type === 'code' ? `<select class="block-language"><option value="python">Python</option><option value="cpp">C++</option><option value="javascript">JavaScript</option><option value="text">Texto</option></select>` : '';
+    const snippets = block.type === 'latex' ? `<div class="latex-snippets"><button type="button" data-latex-snippet="\\frac{}{}">Fracción</button><button type="button" data-latex-snippet="\\sqrt{}">Raíz</button><button type="button" data-latex-snippet="\\int_{}^{} \\, dx">Integral</button><button type="button" data-latex-snippet="\\sum_{}^{}">Suma</button><button type="button" data-latex-snippet="\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}">Matriz</button></div>` : '';
+    const label = { text: 'Texto', latex: 'LaTeX', code: 'Código', quote: 'Cita' }[block.type] || block.type;
+    return `<article class="content-block" data-block-index="${index}"><header><strong>${label}</strong>${language}<div><button type="button" data-block-action="up" title="Subir">↑</button><button type="button" data-block-action="down" title="Bajar">↓</button><button type="button" data-block-action="delete" title="Eliminar">×</button></div></header>${snippets}<textarea class="block-content" rows="${block.type === 'code' ? 8 : 5}" spellcheck="${block.type === 'text' || block.type === 'quote'}">${escapeHtml(block.content || '')}</textarea></article>`;
+  }
+
+  function applyVisualEditorMode() {
+    document.querySelectorAll('.editor-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.editorMode === visualEditorMode));
+    document.getElementById('visual-block-editor').hidden = visualEditorMode !== 'visual';
+    document.getElementById('source-editor').hidden = visualEditorMode !== 'source';
+    document.getElementById('note-live-preview').classList.toggle('mobile-active', visualEditorMode === 'preview');
+    document.querySelector('.block-add-toolbar').hidden = visualEditorMode === 'preview';
+  }
+
+  function renderVisualNodeEditor() {
+    const node = visualNodeAt();
+    const label = document.getElementById('selected-node-label');
+    const visual = document.getElementById('visual-block-editor');
+    const source = document.getElementById('note-source-input');
+    if (!node) {
+      label.textContent = 'Selecciona o crea una parte para comenzar.';
+      visual.innerHTML = '';
+      source.value = '';
       return;
     }
-    const id = document.getElementById('note-id-input').value || `nota-${Date.now()}`;
-    const notes = loadNotes().filter(note => note.id !== id);
-    const title = document.getElementById('note-title-input').value.trim() || 'Nueva nota';
-    const note = {
-      id,
-      subject: document.getElementById('note-subject-input').value,
-      category: document.getElementById('note-category-input').value.trim() || 'basicas',
-      slug: slugify(title),
-      title,
-      desc: document.getElementById('note-desc-input').value.trim(),
-      tags: document.getElementById('note-tags-input').value.split(',').map(tag => tag.trim()).filter(Boolean),
-      status: 'draft',
-      updatedAt: new Date().toISOString().slice(0, 10),
-      content
-    };
-    notes.push(note);
-    saveNotes(notes);
-    fillNoteEditor(note);
-    status.textContent = 'Borrador guardado en este navegador.';
-    renderSubjectContent('matematicas', MATH_DATA);
-    renderSubjectContent('fisica', PHY_DATA);
+    node.blocks ||= [];
+    label.innerHTML = `<label>${NODE_LABELS[node.type] || 'Elemento'}<input id="selected-node-title" value="${escapeHtml(node.title || '')}" aria-label="Título del elemento seleccionado"></label>`;
+    visual.innerHTML = node.blocks.map(visualBlockHtml).join('') || '<p class="admin-empty">Esta sección está vacía. Añade un bloque para comenzar.</p>';
+    visual.querySelectorAll('.block-language').forEach(select => {
+      const index = Number(select.closest('[data-block-index]').dataset.blockIndex);
+      select.value = node.blocks[index].language || 'text';
+    });
+    source.value = blocksToSource(node.blocks);
+    applyVisualEditorMode();
+  }
+
+  function scheduleVisualPreview() {
+    clearTimeout(visualPreviewTimer);
+    visualPreviewTimer = setTimeout(renderVisualPreview, 180);
+  }
+
+  function renderVisualPreview() {
+    const preview = document.getElementById('note-preview-content');
+    const node = visualNodeAt();
+    if (!preview) return;
+    if (!node) {
+      preview.innerHTML = '<p>Selecciona una sección para verla aquí.</p>';
+      return;
+    }
+    preview.innerHTML = renderNode(node, 2, []);
+    if (window.MathJax) {
+      MathJax.typesetClear?.([preview]);
+      MathJax.typesetPromise([preview]).catch(() => {});
+    }
+  }
+
+  function fillVisualEditor(note) {
+    visualEditorNote = cloneNote(note);
+    visualEditorNote.content ||= [];
+    activeNoteId = visualEditorNote.id;
+    visualSelectedPath = visualEditorNote.content.length ? [0] : [];
+    document.getElementById('note-id-input').value = visualEditorNote.id;
+    document.getElementById('note-title-input').value = visualEditorNote.title || '';
+    document.getElementById('note-subject-input').value = visualEditorNote.subject || 'matematicas';
+    renderCategoryOptions(visualEditorNote.subject || 'matematicas', visualEditorNote.category);
+    document.getElementById('note-status-input').value = visualEditorNote.status || 'draft';
+    document.getElementById('note-desc-input').value = visualEditorNote.desc || '';
+    document.getElementById('note-tags-input').value = (visualEditorNote.tags || []).join(', ');
+    document.getElementById('note-editor-status').textContent = 'Sin cambios';
+    renderVisualNotesList();
+    renderVisualOutline();
+    renderVisualNodeEditor();
+    scheduleVisualPreview();
+  }
+
+  function openVisualNotesAdmin() {
+    const overlay = document.getElementById('notes-admin-overlay');
+    fillVisualEditor(loadNotes()[0] || emptyNote());
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeVisualNotesAdmin() {
+    clearTimeout(visualSaveTimer);
+    if (visualEditorNote) saveVisualNote();
+    const overlay = document.getElementById('notes-admin-overlay');
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function insertStructureNode(type, list, index) {
+    const node = { type, title: `Nuevo ${NODE_LABELS[type].toLowerCase()}`, blocks: [] };
+    if (type !== 'subsection') node.children = [];
+    list.splice(index, 0, node);
+  }
+
+  document.querySelector('.notes-admin-btn')?.addEventListener('click', openVisualNotesAdmin);
+  document.querySelector('.notes-admin-close')?.addEventListener('click', closeVisualNotesAdmin);
+  document.querySelector('.notes-admin-overlay')?.addEventListener('click', e => { if (e.target.id === 'notes-admin-overlay') closeVisualNotesAdmin(); });
+  document.querySelector('.notes-new-btn')?.addEventListener('click', () => {
+    clearTimeout(visualSaveTimer);
+    if (visualEditorNote) saveVisualNote();
+    fillVisualEditor(emptyNote());
   });
-  document.querySelector('.note-delete-btn')?.addEventListener('click', () => {
+  document.getElementById('admin-notes-search')?.addEventListener('input', renderVisualNotesList);
+  document.getElementById('admin-notes-list')?.addEventListener('click', e => {
+    const button = e.target.closest('[data-note-id]');
+    if (!button) return;
+    clearTimeout(visualSaveTimer);
+    if (visualEditorNote) saveVisualNote();
+    const note = noteById(button.dataset.noteId);
+    if (note) fillVisualEditor(note);
+  });
+  document.getElementById('note-editor-form')?.addEventListener('submit', e => e.preventDefault());
+  document.getElementById('note-editor-form')?.addEventListener('input', e => {
+    if (e.target.id === 'note-subject-input') renderCategoryOptions(e.target.value, null);
+    syncVisualMetadata(); markVisualEditorDirty();
+  });
+  document.getElementById('note-editor-form')?.addEventListener('change', () => { syncVisualMetadata(); markVisualEditorDirty(); });
+  document.getElementById('note-outline')?.addEventListener('click', e => {
+    const button = e.target.closest('[data-node-path]');
+    if (!button) return;
+    visualSelectedPath = button.dataset.nodePath.split('.').map(Number);
+    renderVisualOutline(); renderVisualNodeEditor(); scheduleVisualPreview();
+  });
+  document.querySelector('.structure-add-part')?.addEventListener('click', () => {
+    insertStructureNode('part', visualEditorNote.content, visualEditorNote.content.length);
+    visualSelectedPath = [visualEditorNote.content.length - 1];
+    renderVisualOutline(); renderVisualNodeEditor(); markVisualEditorDirty();
+    document.getElementById('selected-node-title')?.focus();
+  });
+  document.querySelector('.structure-add-child')?.addEventListener('click', () => {
+    const parent = visualNodeAt();
+    const type = NODE_CHILD_TYPES[parent?.type];
+    if (!type) return alert('Una subsección no admite más niveles. Añade contenido o crea otra subsección.');
+    parent.children ||= [];
+    insertStructureNode(type, parent.children, parent.children.length);
+    visualSelectedPath = [...visualSelectedPath, parent.children.length - 1];
+    renderVisualOutline(); renderVisualNodeEditor(); markVisualEditorDirty();
+    document.getElementById('selected-node-title')?.focus();
+  });
+  document.querySelector('.structure-add-sibling')?.addEventListener('click', () => {
+    const current = visualNodeAt();
+    if (!current) return;
+    const list = visualNodeList(visualSelectedPath);
+    const last = visualSelectedPath.length - 1;
+    const index = visualSelectedPath[last] + 1;
+    insertStructureNode(current.type, list, index);
+    visualSelectedPath = [...visualSelectedPath.slice(0, -1), index];
+    renderVisualOutline(); renderVisualNodeEditor(); markVisualEditorDirty();
+    document.getElementById('selected-node-title')?.focus();
+  });
+  document.querySelector('.structure-rename')?.addEventListener('click', () => document.getElementById('selected-node-title')?.focus());
+  function moveVisualNode(direction) {
+    if (!visualSelectedPath.length) return;
+    const list = visualNodeList(visualSelectedPath);
+    const last = visualSelectedPath.length - 1;
+    const index = visualSelectedPath[last];
+    const target = index + direction;
+    if (target < 0 || target >= list.length) return;
+    [list[index], list[target]] = [list[target], list[index]];
+    visualSelectedPath = [...visualSelectedPath.slice(0, -1), target];
+    renderVisualOutline(); markVisualEditorDirty();
+  }
+  document.querySelector('.structure-move-up')?.addEventListener('click', () => moveVisualNode(-1));
+  document.querySelector('.structure-move-down')?.addEventListener('click', () => moveVisualNode(1));
+  document.querySelector('.structure-delete')?.addEventListener('click', () => {
+    const node = visualNodeAt();
+    if (!node || !confirm(`¿Eliminar “${node.title}” y todo su contenido?`)) return;
+    const list = visualNodeList(visualSelectedPath);
+    const last = visualSelectedPath.length - 1;
+    const removedIndex = visualSelectedPath[last];
+    list.splice(removedIndex, 1);
+    visualSelectedPath = visualSelectedPath.slice(0, -1);
+    if (!visualSelectedPath.length && visualEditorNote.content.length) visualSelectedPath = [Math.min(removedIndex, visualEditorNote.content.length - 1)];
+    renderVisualOutline(); renderVisualNodeEditor(); markVisualEditorDirty();
+  });
+  document.getElementById('selected-node-label')?.addEventListener('input', e => {
+    if (e.target.id !== 'selected-node-title') return;
+    visualNodeAt().title = e.target.value;
+    renderVisualOutline(); markVisualEditorDirty();
+  });
+  document.querySelector('.block-add-toolbar')?.addEventListener('click', e => {
+    const button = e.target.closest('[data-add-block]');
+    const node = visualNodeAt();
+    if (!button || !node) return;
+    node.blocks ||= [];
+    const block = { type: button.dataset.addBlock, content: button.dataset.addBlock === 'latex' ? '$$\n\n$$' : '' };
+    if (block.type === 'code') block.language = 'python';
+    node.blocks.push(block);
+    renderVisualNodeEditor(); markVisualEditorDirty();
+    document.querySelector(`.content-block[data-block-index="${node.blocks.length - 1}"] textarea`)?.focus();
+  });
+  document.getElementById('visual-block-editor')?.addEventListener('input', e => {
+    const card = e.target.closest('[data-block-index]');
+    const node = visualNodeAt();
+    if (!card || !node) return;
+    const block = node.blocks[Number(card.dataset.blockIndex)];
+    if (e.target.classList.contains('block-content')) block.content = e.target.value;
+    if (e.target.classList.contains('block-language')) block.language = e.target.value;
+    markVisualEditorDirty();
+  });
+  document.getElementById('visual-block-editor')?.addEventListener('click', e => {
+    const card = e.target.closest('[data-block-index]');
+    const node = visualNodeAt();
+    if (!card || !node) return;
+    const index = Number(card.dataset.blockIndex);
+    const action = e.target.closest('[data-block-action]')?.dataset.blockAction;
+    if (action === 'delete') node.blocks.splice(index, 1);
+    if (action === 'up' && index > 0) [node.blocks[index - 1], node.blocks[index]] = [node.blocks[index], node.blocks[index - 1]];
+    if (action === 'down' && index < node.blocks.length - 1) [node.blocks[index + 1], node.blocks[index]] = [node.blocks[index], node.blocks[index + 1]];
+    const snippet = e.target.closest('[data-latex-snippet]')?.dataset.latexSnippet;
+    if (snippet) {
+      const textarea = card.querySelector('textarea');
+      textarea.setRangeText(snippet, textarea.selectionStart, textarea.selectionEnd, 'end');
+      node.blocks[index].content = textarea.value;
+      textarea.focus();
+    }
+    if (action) renderVisualNodeEditor();
+    if (action || snippet) markVisualEditorDirty();
+  });
+  document.querySelector('.editor-tabs')?.addEventListener('click', e => {
+    const tab = e.target.closest('[data-editor-mode]');
+    if (!tab) return;
+    if (visualEditorMode === 'source') visualNodeAt().blocks = sourceToBlocks(document.getElementById('note-source-input').value);
+    visualEditorMode = tab.dataset.editorMode;
+    if (visualEditorMode === 'source') document.getElementById('note-source-input').value = blocksToSource(visualNodeAt()?.blocks || []);
+    if (visualEditorMode === 'visual') renderVisualNodeEditor();
+    applyVisualEditorMode(); scheduleVisualPreview();
+  });
+  document.getElementById('note-source-input')?.addEventListener('input', e => {
+    const node = visualNodeAt();
+    if (!node) return;
+    node.blocks = sourceToBlocks(e.target.value);
+    markVisualEditorDirty();
+  });
+  document.querySelector('.note-save-btn')?.addEventListener('click', () => { clearTimeout(visualSaveTimer); saveVisualNote('Borrador guardado ahora'); });
+  document.querySelector('.note-open-btn')?.addEventListener('click', () => {
+    saveVisualNote();
+    const note = cloneNote(visualEditorNote);
+    closeVisualNotesAdmin();
+    renderNote(note); showPage('libro');
+    window.history.replaceState(null, '', `#nota/${note.subject}/${note.category}/${note.slug || note.id}`);
+  });
+  document.querySelector('.note-backup-btn')?.addEventListener('click', () => {
+    saveVisualNote();
+    const blob = new Blob([JSON.stringify(loadNotes(), null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `notas-respaldo-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click(); URL.revokeObjectURL(link.href);
+  });
+  document.querySelector('.visual-note-delete-btn')?.addEventListener('click', () => {
     if (!activeNoteId || !confirm('¿Eliminar esta nota del borrador local?')) return;
     saveNotes(loadNotes().filter(note => note.id !== activeNoteId));
-    const next = loadNotes()[0] || emptyNote();
-    fillNoteEditor(next);
-    renderSubjectContent('matematicas', MATH_DATA);
-    renderSubjectContent('fisica', PHY_DATA);
+    fillVisualEditor(loadNotes()[0] || emptyNote());
   });
 
   fetch('data.json')
@@ -685,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const route = parseHash();
       if (route.page === 'nota' && route.topic) {
         const [subject, category, slug] = route.topic.split('/');
-        const note = loadNotes().find(item => item.subject === subject && item.category === category && (item.slug === slug || item.id === slug));
+        const note = loadNotes().find(item => (isAdmin() || item.status === 'published') && item.subject === subject && item.category === category && (item.slug === slug || item.id === slug));
         if (note) { renderNote(note); showPage('libro'); }
       }
       applyGearVisibility();
@@ -901,6 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
       });
     }
+    merged.notes = loadNotes();
     const content = JSON.stringify(merged, null, 2);
 
     let token = sessionStorage.getItem('gh_token');
@@ -1134,7 +1402,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { copyButton.textContent = 'Copiar'; }, 1200);
       });
     }
-    merged.notes = loadNotes();
   });
 
   /* ============================================
@@ -1188,6 +1455,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeModal();
+      if (document.getElementById('notes-admin-overlay')?.classList.contains('open')) closeVisualNotesAdmin();
       document.querySelectorAll('.subcard.flipped').forEach(card => {
         resetForm(card);
         card.classList.remove('flipped');

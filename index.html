@@ -420,43 +420,96 @@
     <div class="notes-admin-overlay" id="notes-admin-overlay" aria-hidden="true">
         <div class="notes-admin-panel" role="dialog" aria-modal="true" aria-labelledby="notes-admin-title">
             <button class="modal-close notes-admin-close" type="button">&times;</button>
-            <h2 id="notes-admin-title">Administrar notas</h2>
-            <p class="admin-help">Los cambios se guardan como borrador en este navegador. Usa “Exportar data.json” para publicarlos.</p>
+            <div class="notes-admin-heading">
+                <div>
+                    <h2 id="notes-admin-title">Taller de notas</h2>
+                    <p class="admin-help">Escribe por bloques o en modo fuente. Los cambios se guardan automáticamente en este navegador.</p>
+                </div>
+                <p id="note-editor-status" class="note-editor-status" role="status">Sin cambios</p>
+            </div>
             <div class="notes-admin-layout">
-                <aside>
-                    <button class="save-btn notes-new-btn" type="button">Nueva nota</button>
+                <aside class="notes-library">
+                    <button class="save-btn notes-new-btn" type="button">+ Nueva nota</button>
+                    <input id="admin-notes-search" class="admin-notes-search" type="search" placeholder="Buscar notas...">
                     <div id="admin-notes-list" class="admin-notes-list"></div>
                 </aside>
-                <form id="note-editor-form" class="note-editor-form">
-                    <input type="hidden" id="note-id-input">
-                    <label>Título <input id="note-title-input" required></label>
-                    <div class="admin-form-row">
-                        <label>Materia
-                            <select id="note-subject-input">
-                                <option value="matematicas">Matemáticas</option>
-                                <option value="fisica">Física</option>
-                            </select>
-                        </label>
-                        <label>Categoría <input id="note-category-input" placeholder="basicas" required></label>
+
+                <section class="note-workspace">
+                    <details class="note-metadata" open>
+                        <summary>Datos de la nota</summary>
+                        <form id="note-editor-form" class="note-editor-form">
+                            <input type="hidden" id="note-id-input">
+                            <label>Título <input id="note-title-input" required></label>
+                            <div class="admin-form-row">
+                                <label>Materia
+                                    <select id="note-subject-input">
+                                        <option value="matematicas">Matemáticas</option>
+                                        <option value="fisica">Física</option>
+                                    </select>
+                                </label>
+                                <label>Categoría <select id="note-category-input"></select></label>
+                                <label>Estado
+                                    <select id="note-status-input">
+                                        <option value="draft">Borrador</option>
+                                        <option value="published">Publicada</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <label>Descripción <input id="note-desc-input"></label>
+                            <label>Etiquetas <input id="note-tags-input" placeholder="cálculo, derivadas, análisis"></label>
+                        </form>
+                    </details>
+
+                    <div class="note-compose-layout">
+                        <aside class="note-outline-panel">
+                            <div class="panel-heading">
+                                <h3>Estructura</h3>
+                                <button class="icon-btn structure-add-part" type="button" title="Añadir parte">+ Parte</button>
+                            </div>
+                            <div id="note-outline" class="note-outline"></div>
+                            <div class="structure-actions">
+                                <button class="secondary-btn structure-add-child" type="button">+ Dentro</button>
+                                <button class="secondary-btn structure-add-sibling" type="button">+ Después</button>
+                                <button class="secondary-btn structure-rename" type="button">Renombrar</button>
+                                <button class="secondary-btn structure-move-up" type="button" title="Subir">↑</button>
+                                <button class="secondary-btn structure-move-down" type="button" title="Bajar">↓</button>
+                                <button class="secondary-btn structure-delete" type="button">Eliminar</button>
+                            </div>
+                        </aside>
+
+                        <section class="note-compose-panel">
+                            <div class="editor-tabs" role="tablist">
+                                <button class="editor-tab active" type="button" data-editor-mode="visual">Bloques</button>
+                                <button class="editor-tab" type="button" data-editor-mode="source">Fuente</button>
+                                <button class="editor-tab mobile-preview-tab" type="button" data-editor-mode="preview">Vista previa</button>
+                            </div>
+                            <p id="selected-node-label" class="selected-node-label">Selecciona una sección</p>
+                            <div id="visual-block-editor" class="visual-block-editor"></div>
+                            <div id="source-editor" class="source-editor" hidden>
+                                <p class="source-help">Usa <code>% @text</code>, <code>% @latex</code>, <code>% @quote</code> o <code>% @code python</code> para separar bloques.</p>
+                                <textarea id="note-source-input" rows="20" spellcheck="false"></textarea>
+                            </div>
+                            <div class="block-add-toolbar">
+                                <button class="secondary-btn" type="button" data-add-block="text">+ Texto</button>
+                                <button class="secondary-btn" type="button" data-add-block="latex">+ LaTeX</button>
+                                <button class="secondary-btn" type="button" data-add-block="code">+ Código</button>
+                                <button class="secondary-btn" type="button" data-add-block="quote">+ Cita</button>
+                            </div>
+                        </section>
+
+                        <aside id="note-live-preview" class="note-live-preview">
+                            <div class="panel-heading"><h3>Vista previa</h3><span>En vivo</span></div>
+                            <div id="note-preview-content" class="book-content note-preview-content"></div>
+                        </aside>
                     </div>
-                    <label>Descripción <input id="note-desc-input"></label>
-                    <label>Etiquetas <input id="note-tags-input" placeholder="calculo, derivadas, análisis"></label>
-                    <label>Contenido estructurado (JSON)
-                        <div class="note-builder-toolbar">
-                            <button type="button" class="secondary-btn" data-add-structure="part">+ Parte</button>
-                            <button type="button" class="secondary-btn" data-add-structure="chapter">+ Capítulo</button>
-                            <button type="button" class="secondary-btn" data-add-structure="section">+ Sección</button>
-                            <button type="button" class="secondary-btn" data-add-structure="subsection">+ Subsección</button>
-                            <button type="button" class="secondary-btn" data-add-structure="latex">+ LaTeX</button>
-                        </div>
-                        <textarea id="note-content-input" rows="18" spellcheck="false"></textarea>
-                    </label>
+
                     <div class="note-editor-actions">
-                        <button class="save-btn" type="submit">Guardar borrador</button>
-                        <button class="secondary-btn note-delete-btn" type="button">Eliminar nota</button>
+                        <button class="save-btn note-save-btn" type="button">Guardar ahora</button>
+                        <button class="secondary-btn note-open-btn" type="button">Abrir nota</button>
+                        <button class="secondary-btn note-backup-btn" type="button">Descargar respaldo</button>
+                        <button class="secondary-btn visual-note-delete-btn" type="button">Eliminar nota</button>
                     </div>
-                    <p id="note-editor-status" class="note-editor-status" role="status"></p>
-                </form>
+                </section>
             </div>
         </div>
     </div>

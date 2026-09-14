@@ -502,12 +502,37 @@ El índice de una nota se genera automáticamente desde los títulos de la jerar
 
 ### Administración y persistencia
 
-En modo administrador aparece el botón `Administrar notas`. Los borradores se guardan en `localStorage` bajo la clave `webjuan_notes_drafts`, por lo que no se pierde el contenido al recargar el navegador, pero todavía no se comparte entre dispositivos.
+En modo administrador aparece el botón `Administrar notas`. El taller ofrece:
+
+- Biblioteca con búsqueda y estado de publicación.
+- Árbol visual para partes, capítulos, secciones y subsecciones.
+- Creación contextual dentro o después del elemento seleccionado.
+- Bloques reordenables de texto, LaTeX, código y citas.
+- Atajos para fracciones, raíces, integrales, sumas y matrices.
+- Modo `Fuente` sincronizado con los bloques mediante directivas como `% @latex` y `% @code python`.
+- Vista previa MathJax en vivo.
+- Selectores de materia, categoría y estado.
+- Guardado automático y descarga de respaldos JSON.
+
+Los borradores se guardan en `localStorage` dentro de la clave principal `webjuan_cards`, bajo la propiedad `webjuan_notes_drafts`. No se pierde el contenido al recargar el navegador, pero todavía no se comparte entre dispositivos.
+
+En el modo fuente, cada bloque comienza con una directiva:
+
+```text
+% @text
+Explicación de la fórmula.
+
+% @latex
+$$E = mc^2$$
+
+% @code python
+print("Ejemplo")
+```
 
 Para publicar los cambios:
 
 1. Abrir `Administrar notas`.
-2. Guardar el borrador.
+2. Esperar el indicador `Guardado localmente` o pulsar `Guardar ahora`.
 3. Usar `Exportar data.json`.
 4. Confirmar el commit en GitHub.
 
