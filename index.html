@@ -42,6 +42,7 @@
             <a href="#" class="nav-link" data-page="recomendaciones">Curr&iacute;culum</a>
         </nav>
         <button class="theme-toggle">🌙</button>
+        <button class="notes-admin-btn admin_btn" style="display:none">Administrar notas</button>
         <button class="export-btn admin_btn" style="display:none">Exportar data.json</button>
     </header>
 
@@ -400,7 +401,7 @@
         <!-- ==============================
              PAGE: LIBRO ONLINE
              ============================== -->
-        <section class="page" id="page-libro">
+    <section class="page" id="page-libro">
             <div class="book-layout">
                 <aside class="book-sidebar">
                     <button class="book-back-btn">&larr; Volver</button>
@@ -414,6 +415,51 @@
                 </div>
             </div>
         </section>
+
+    <!-- ADMINISTRADOR DE NOTAS -->
+    <div class="notes-admin-overlay" id="notes-admin-overlay" aria-hidden="true">
+        <div class="notes-admin-panel" role="dialog" aria-modal="true" aria-labelledby="notes-admin-title">
+            <button class="modal-close notes-admin-close" type="button">&times;</button>
+            <h2 id="notes-admin-title">Administrar notas</h2>
+            <p class="admin-help">Los cambios se guardan como borrador en este navegador. Usa “Exportar data.json” para publicarlos.</p>
+            <div class="notes-admin-layout">
+                <aside>
+                    <button class="save-btn notes-new-btn" type="button">Nueva nota</button>
+                    <div id="admin-notes-list" class="admin-notes-list"></div>
+                </aside>
+                <form id="note-editor-form" class="note-editor-form">
+                    <input type="hidden" id="note-id-input">
+                    <label>Título <input id="note-title-input" required></label>
+                    <div class="admin-form-row">
+                        <label>Materia
+                            <select id="note-subject-input">
+                                <option value="matematicas">Matemáticas</option>
+                                <option value="fisica">Física</option>
+                            </select>
+                        </label>
+                        <label>Categoría <input id="note-category-input" placeholder="basicas" required></label>
+                    </div>
+                    <label>Descripción <input id="note-desc-input"></label>
+                    <label>Etiquetas <input id="note-tags-input" placeholder="calculo, derivadas, análisis"></label>
+                    <label>Contenido estructurado (JSON)
+                        <div class="note-builder-toolbar">
+                            <button type="button" class="secondary-btn" data-add-structure="part">+ Parte</button>
+                            <button type="button" class="secondary-btn" data-add-structure="chapter">+ Capítulo</button>
+                            <button type="button" class="secondary-btn" data-add-structure="section">+ Sección</button>
+                            <button type="button" class="secondary-btn" data-add-structure="subsection">+ Subsección</button>
+                            <button type="button" class="secondary-btn" data-add-structure="latex">+ LaTeX</button>
+                        </div>
+                        <textarea id="note-content-input" rows="18" spellcheck="false"></textarea>
+                    </label>
+                    <div class="note-editor-actions">
+                        <button class="save-btn" type="submit">Guardar borrador</button>
+                        <button class="secondary-btn note-delete-btn" type="button">Eliminar nota</button>
+                    </div>
+                    <p id="note-editor-status" class="note-editor-status" role="status"></p>
+                </form>
+            </div>
+        </div>
+    </div>
 
     </main>
 

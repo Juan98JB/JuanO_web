@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.gear').forEach(g => g.style.display = show ? '' : 'none');
     const exportBtn = document.querySelector('.export-btn');
     if (exportBtn) exportBtn.style.display = show ? '' : 'none';
+    const notesAdminBtn = document.querySelector('.notes-admin-btn');
+    if (notesAdminBtn) notesAdminBtn.style.display = show ? '' : 'none';
   }
 
   async function sha256(str) {
@@ -101,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.slice(1);
     if (hash.includes('/')) {
       const parts = hash.split('/');
+      if (parts[0] === 'nota' && parts.length >= 4) {
+        return { page: 'nota', mode: null, topic: parts.slice(1).join('/') };
+      }
       if (parts.length >= 2 && (parts[1] === 'notas' || parts[1] === 'ejercicios')) {
         return { page: parts[0], mode: parts[1], topic: parts.slice(2).join('/') || null };
       }
@@ -142,6 +147,30 @@ document.addEventListener('DOMContentLoaded', () => {
      Data Fetch & Subject Cards
      ============================================ */
   const DATA = {};
+
+  const NOTES_STORAGE_KEY = 'webjuan_notes_drafts';
+  let activeNoteId = null;
+
+  function loadNotes() {
+    const stored = loadLocalData()[NOTES_STORAGE_KEY];
+    if (Array.isArray(stored)) return stored;
+    return Array.isArray(DATA.notes) ? DATA.notes : [];
+  }
+
+  function saveNotes(notes) {
+    const local = loadLocalData();
+    local[NOTES_STORAGE_KEY] = notes;
+    saveLocalData(local);
+  }
+
+  function noteById(id) {
+    return loadNotes().find(note => note.id === id) || null;
+  }
+
+  function slugify(value) {
+    return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
 
   function escapeHtml(str) {
     const d = document.createElement('div');
@@ -279,8 +308,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const allItems = [];
     Object.keys(data).forEach(cat => {
       data[cat].forEach(item => {
-        allItems.push({ ...item, cat });
+        const note = loadNotes().find(savedNote => savedNote.id === item.id && savedNote.subject === pageId);
+        allItems.push({ ...item, ...(note || {}), cat });
       });
+    });
+    loadNotes().filter(note => note.subject === pageId).forEach(note => {
+      if (!allItems.some(item => item.id === note.id)) allItems.push({ ...note, cat: note.category });
     });
 
     const total = allItems.length;
@@ -317,69 +350,76 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderBook(pageId, category) {
     const data = pageId === 'fisica' ? PHY_DATA : MATH_DATA;
     const items = data[category] || [];
-    const local = loadLocalData();
-
+    const notes = loadNotes().filter(note => note.subject === pageId && note.category === category);
     const labels = {
       matematicas: { basicas: 'Matemáticas Básicas', avanzadas: 'Matemáticas Avanzadas', aplicadas: 'Matemáticas Aplicadas' },
       fisica: { clasica: 'Física Clásica', moderna: 'Física Moderna', matematica: 'Física Matemática' }
     };
     const titleText = labels[pageId]?.[category] || category;
-
-    document.getElementById('book-title').textContent = titleText;
-    
     const tocEl = document.getElementById('book-toc');
     const contentEl = document.getElementById('book-content-container');
-    
-    let tocHTML = '';
-    let contentHTML = '';
+    document.getElementById('book-title').textContent = titleText;
 
-    items.forEach((item, idx) => {
-      const saved = local[item.id] || {};
-      let savedContent = saved.content || item.content || '';
-      if (!savedContent.trim()) {
-        savedContent = `<p>Contenido de <strong>${item.title}</strong> pendiente...</p>`;
-      } else {
-        // Simple line break to <br> if not using proper HTML/Markdown, but LaTeX usually handles its own blocks.
-        // Assuming it's HTML with LaTeX mixed.
-      }
-      
-      tocHTML += `<li class="${idx === 0 ? 'active' : ''}"><a href="#cap-${item.id}">${item.title}</a></li>`;
-      
-      contentHTML += `
-        <div class="book-content" id="cap-${item.id}" style="${idx === 0 ? '' : 'display: none;'}">
-            <h1>${item.title}</h1>
-            ${savedContent}
-        </div>
-      `;
-    });
+    if (notes.length) {
+      renderNote(notes[0]);
+      return;
+    }
 
-    tocEl.innerHTML = tocHTML;
-    contentEl.innerHTML = contentHTML;
+    const fallback = items.map(item => ({
+      id: item.id,
+      subject: pageId,
+      category,
+      title: item.title,
+      desc: item.desc,
+      content: [{ type: 'chapter', title: item.title, children: [{ type: 'section', title: 'Contenido', blocks: [{ type: 'text', content: 'Esta nota aún no tiene contenido publicado.' }] }] }]
+    }));
+    if (!fallback.length) {
+      tocEl.innerHTML = '<li><span>No hay notas en esta categoría.</span></li>';
+      contentEl.innerHTML = '<article class="book-content"><h1>Sin notas todavía</h1><p>Activa el modo administrador para crear la primera nota.</p></article>';
+      return;
+    }
+    renderNote(fallback[0]);
+  }
 
-    // Attach events for TOC
-    const tocLinks = tocEl.querySelectorAll('a');
-    tocLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        tocEl.querySelectorAll('li').forEach(li => li.classList.remove('active'));
-        link.parentElement.classList.add('active');
-        
-        const targetId = link.getAttribute('href').substring(1);
-        contentEl.querySelectorAll('.book-content').forEach(div => div.style.display = 'none');
-        document.getElementById(targetId).style.display = 'block';
+  function renderInlineBlock(block) {
+    const content = escapeHtml(block.content || '').replace(/\n/g, '<br>');
+    if (block.type === 'code') {
+      return `<pre class="note-code"><code>${escapeHtml(block.content || '')}</code><button class="copy-code-btn" type="button">Copiar</button></pre>`;
+    }
+    if (block.type === 'latex') return `<div class="note-latex">${content}</div>`;
+    if (block.type === 'quote') return `<blockquote>${content}</blockquote>`;
+    return `<p>${content}</p>`;
+  }
 
-        if (window.MathJax) {
-          MathJax.typesetPromise();
-        }
-      });
-    });
+  function renderNode(node, level, links) {
+    const id = `note-${slugify(node.title)}-${links.length}`;
+    const heading = Math.min(level, 4);
+    links.push({ id, title: node.title, level });
+    let html = `<section class="note-node note-level-${level}" id="${id}"><h${heading}>${escapeHtml(node.title || 'Sin título')}</h${heading}>`;
+    (node.blocks || []).forEach(block => { html += renderInlineBlock(block); });
+    (node.children || []).forEach(child => { html += renderNode(child, level + 1, links); });
+    return `${html}</section>`;
+  }
 
-    // Store current pageId to know where to go back
+  function renderNote(note) {
+    const tocEl = document.getElementById('book-toc');
+    const contentEl = document.getElementById('book-content-container');
+    const links = [];
+    let content = `<article class="book-content"><p class="note-breadcrumb">${escapeHtml(note.subject)} / ${escapeHtml(note.category)}</p><h1>${escapeHtml(note.title)}</h1><p class="note-description">${escapeHtml(note.desc || '')}</p>`;
+    (note.content || []).forEach(node => { content += renderNode(node, 1, links); });
+    content += '</article>';
+    contentEl.innerHTML = content;
+    tocEl.innerHTML = links.map(link => `<li class="toc-level-${link.level}"><a href="#${link.id}">${escapeHtml(link.title)}</a></li>`).join('');
     const backBtn = document.querySelector('.book-back-btn');
     if (backBtn) {
-      backBtn.dataset.backTo = pageId;
-      backBtn.innerHTML = `&larr; Volver a ${pageId === 'fisica' ? 'Física' : 'Matemáticas'}`;
+      backBtn.dataset.backTo = note.subject;
+      backBtn.innerHTML = `&larr; Volver a ${note.subject === 'fisica' ? 'Física' : 'Matemáticas'}`;
     }
+    tocEl.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+      tocEl.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+      link.parentElement.classList.add('active');
+    }));
+    if (window.MathJax) MathJax.typesetPromise([contentEl]);
   }
 
   function filterNotesByCategory(pageId, category) {
@@ -495,6 +535,144 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function emptyNote() {
+    return {
+      id: `nota-${Date.now()}`,
+      subject: 'matematicas',
+      category: 'basicas',
+      slug: `nota-${Date.now()}`,
+      title: 'Nueva nota',
+      desc: '',
+      tags: [],
+      status: 'draft',
+      updatedAt: new Date().toISOString().slice(0, 10),
+      content: [{ type: 'part', title: 'Nueva parte', children: [] }]
+    };
+  }
+
+  function renderAdminNotesList() {
+    const list = document.getElementById('admin-notes-list');
+    if (!list) return;
+    list.innerHTML = loadNotes().map(note => `<button type="button" class="admin-note-item ${note.id === activeNoteId ? 'active' : ''}" data-note-id="${escapeHtml(note.id)}"><strong>${escapeHtml(note.title)}</strong><small>${escapeHtml(note.subject)} / ${escapeHtml(note.category)}</small></button>`).join('');
+  }
+
+  function fillNoteEditor(note) {
+    activeNoteId = note.id;
+    document.getElementById('note-id-input').value = note.id;
+    document.getElementById('note-title-input').value = note.title || '';
+    document.getElementById('note-subject-input').value = note.subject || 'matematicas';
+    document.getElementById('note-category-input').value = note.category || 'basicas';
+    document.getElementById('note-desc-input').value = note.desc || '';
+    document.getElementById('note-tags-input').value = (note.tags || []).join(', ');
+    document.getElementById('note-content-input').value = JSON.stringify(note.content || [], null, 2);
+    document.getElementById('note-editor-status').textContent = '';
+    renderAdminNotesList();
+  }
+
+  function openNotesAdmin() {
+    const overlay = document.getElementById('notes-admin-overlay');
+    if (!overlay) return;
+    const notes = loadNotes();
+    fillNoteEditor(notes[0] || emptyNote());
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeNotesAdmin() {
+    const overlay = document.getElementById('notes-admin-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelector('.notes-admin-btn')?.addEventListener('click', openNotesAdmin);
+  document.querySelector('.notes-admin-close')?.addEventListener('click', closeNotesAdmin);
+  document.querySelector('.notes-admin-overlay')?.addEventListener('click', e => {
+    if (e.target.id === 'notes-admin-overlay') closeNotesAdmin();
+  });
+  document.querySelector('.notes-new-btn')?.addEventListener('click', () => fillNoteEditor(emptyNote()));
+  document.getElementById('admin-notes-list')?.addEventListener('click', e => {
+    const button = e.target.closest('[data-note-id]');
+    if (button) fillNoteEditor(noteById(button.dataset.noteId));
+  });
+  function appendStructureItem(type) {
+    const input = document.getElementById('note-content-input');
+    let tree;
+    try { tree = JSON.parse(input.value || '[]'); } catch { alert('Corrige primero el JSON de la nota.'); return; }
+    const title = type === 'latex' ? 'Ecuación' : (prompt(`Título de la ${type}:`) || '').trim();
+    if (!title && type !== 'latex') return;
+    if (type === 'part') tree.push({ type, title, children: [] });
+    if (type === 'chapter') {
+      const parent = [...tree].reverse().find(node => node.type === 'part');
+      if (!parent) return alert('Crea primero una parte.');
+      (parent.children ||= []).push({ type, title, children: [] });
+    }
+    if (type === 'section') {
+      let parent;
+      tree.forEach(part => (part.children || []).forEach(chapter => { if (chapter.type === 'chapter') parent = chapter; }));
+      if (!parent) return alert('Crea primero un capítulo.');
+      (parent.children ||= []).push({ type, title, children: [] });
+    }
+    if (type === 'subsection') {
+      let parent;
+      tree.forEach(part => (part.children || []).forEach(chapter => (chapter.children || []).forEach(section => { if (section.type === 'section') parent = section; })));
+      if (!parent) return alert('Crea primero una sección.');
+      (parent.children ||= []).push({ type, title, blocks: [] });
+    }
+    if (type === 'latex') {
+      let parent;
+      tree.forEach(part => (part.children || []).forEach(chapter => (chapter.children || []).forEach(section => (section.children || []).forEach(subsection => { if (subsection.type === 'subsection') parent = subsection; }))));
+      if (!parent) return alert('Crea primero una subsección.');
+      (parent.blocks ||= []).push({ type, content: '$$\\n\\n$$' });
+    }
+    input.value = JSON.stringify(tree, null, 2);
+  }
+  document.querySelector('.note-builder-toolbar')?.addEventListener('click', e => {
+    const button = e.target.closest('[data-add-structure]');
+    if (button) appendStructureItem(button.dataset.addStructure);
+  });
+  document.getElementById('note-editor-form')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const status = document.getElementById('note-editor-status');
+    let content;
+    try {
+      content = JSON.parse(document.getElementById('note-content-input').value || '[]');
+      if (!Array.isArray(content)) throw new Error('El contenido debe ser un arreglo JSON.');
+    } catch (error) {
+      status.textContent = `Error en la estructura: ${error.message}`;
+      return;
+    }
+    const id = document.getElementById('note-id-input').value || `nota-${Date.now()}`;
+    const notes = loadNotes().filter(note => note.id !== id);
+    const title = document.getElementById('note-title-input').value.trim() || 'Nueva nota';
+    const note = {
+      id,
+      subject: document.getElementById('note-subject-input').value,
+      category: document.getElementById('note-category-input').value.trim() || 'basicas',
+      slug: slugify(title),
+      title,
+      desc: document.getElementById('note-desc-input').value.trim(),
+      tags: document.getElementById('note-tags-input').value.split(',').map(tag => tag.trim()).filter(Boolean),
+      status: 'draft',
+      updatedAt: new Date().toISOString().slice(0, 10),
+      content
+    };
+    notes.push(note);
+    saveNotes(notes);
+    fillNoteEditor(note);
+    status.textContent = 'Borrador guardado en este navegador.';
+    renderSubjectContent('matematicas', MATH_DATA);
+    renderSubjectContent('fisica', PHY_DATA);
+  });
+  document.querySelector('.note-delete-btn')?.addEventListener('click', () => {
+    if (!activeNoteId || !confirm('¿Eliminar esta nota del borrador local?')) return;
+    saveNotes(loadNotes().filter(note => note.id !== activeNoteId));
+    const next = loadNotes()[0] || emptyNote();
+    fillNoteEditor(next);
+    renderSubjectContent('matematicas', MATH_DATA);
+    renderSubjectContent('fisica', PHY_DATA);
+  });
+
   fetch('data.json')
     .then(r => r.json())
     .then(data => {
@@ -502,6 +680,14 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSubjectCards();
       renderNovedadesCards();
       syncHardcodedCards();
+      renderSubjectContent('matematicas', MATH_DATA);
+      renderSubjectContent('fisica', PHY_DATA);
+      const route = parseHash();
+      if (route.page === 'nota' && route.topic) {
+        const [subject, category, slug] = route.topic.split('/');
+        const note = loadNotes().find(item => item.subject === subject && item.category === category && (item.slug === slug || item.id === slug));
+        if (note) { renderNote(note); showPage('libro'); }
+      }
       applyGearVisibility();
     })
     .catch(() => {});
@@ -700,6 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const local = loadLocalData();
     const merged = {};
     for (const [key, items] of Object.entries(DATA)) {
+      if (key === 'notes') continue;
       merged[key] = items.map(item => {
         const saved = local[item.id];
         if (!saved) return { ...item };
@@ -892,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 3c - Math/Phy note/featured card → open modal
+    // 3c - Math/Phy note/featured card → open full note
     const mathCard = target.closest('.math-note-card, .math-featured__card');
     if (mathCard && !target.closest('.gear')) {
       const id = mathCard.dataset.id;
@@ -903,12 +1090,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const items = data[cat] || [];
       const item = items.find(i => i.id === id);
       if (item) {
-        openModal(item.title, item.desc + '\n\nContenido pendiente...');
         const modeTab = page.querySelector('.mode-tab.active');
         const mode = modeTab?.dataset.mode || 'notas';
         page.querySelectorAll('.math-note-card, .math-featured__card').forEach(c => c.classList.remove('active-topic'));
         mathCard.classList.add('active-topic');
-        window.history.replaceState(null, '', `#${pageId}/${mode}/${id}`);
+        const note = noteById(id);
+        if (note) {
+          renderNote(note);
+          showPage('libro');
+          window.history.replaceState(null, '', `#nota/${note.subject}/${note.category}/${note.slug || note.id}`);
+          if (window.MathJax) MathJax.typesetPromise();
+        } else {
+          openModal(item.title, item.desc + '\n\nEsta nota aún no tiene contenido publicado.');
+          window.history.replaceState(null, '', `#${pageId}/${mode}/${id}`);
+        }
       }
       return;
     }
@@ -930,6 +1125,16 @@ document.addEventListener('DOMContentLoaded', () => {
       window.history.replaceState(null, '', `#${targetPage}`);
       return;
     }
+
+    const copyButton = target.closest('.copy-code-btn');
+    if (copyButton) {
+      const code = copyButton.parentElement.querySelector('code')?.textContent || '';
+      navigator.clipboard?.writeText(code).then(() => {
+        copyButton.textContent = 'Copiado';
+        setTimeout(() => { copyButton.textContent = 'Copiar'; }, 1200);
+      });
+    }
+    merged.notes = loadNotes();
   });
 
   /* ============================================

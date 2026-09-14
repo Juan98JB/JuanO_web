@@ -333,5 +333,54 @@
       "fixedTitle": true,
       "imageUrl": "https://m.media-amazon.com/images/S/pv-target-images/165f714fd9cfd11fde5beb402fb373fbfbadcfbcf3bb391cf6441195a8f463ae.jpg"
     }
+  ],
+  "notes": [
+    {
+      "id": "calculo",
+      "subject": "matematicas",
+      "category": "basicas",
+      "slug": "calculo",
+      "title": "Cálculo",
+      "desc": "Límites, derivadas, integrales y aplicaciones.",
+      "tags": ["cálculo", "derivadas", "integrales"],
+      "status": "published",
+      "updatedAt": "2026-09-13",
+      "content": [
+        { "type": "part", "title": "Fundamentos", "children": [
+          { "type": "chapter", "title": "Límites", "children": [
+            { "type": "section", "title": "Definición", "children": [
+              { "type": "subsection", "title": "Idea intuitiva", "blocks": [
+                { "type": "text", "content": "El límite describe el valor al que se aproxima una función cuando su variable se acerca a un punto." },
+                { "type": "latex", "content": "$$\\lim_{x \\to a} f(x) = L$$" }
+              ] }
+            ] }
+          ] }
+        ] }
+      ]
+    },
+    {
+      "id": "mecanica-newtoniana",
+      "subject": "fisica",
+      "category": "clasica",
+      "slug": "mecanica-newtoniana",
+      "title": "Mecánica Newtoniana",
+      "desc": "Leyes del movimiento, sistemas de partículas y cuerpos rígidos.",
+      "tags": ["mecánica", "newton", "física clásica"],
+      "status": "published",
+      "updatedAt": "2026-09-13",
+      "content": [
+        { "type": "part", "title": "Mecánica clásica", "children": [
+          { "type": "chapter", "title": "Leyes de Newton", "children": [
+            { "type": "section", "title": "Segunda ley", "children": [
+              { "type": "subsection", "title": "Forma vectorial", "blocks": [
+                { "type": "text", "content": "La fuerza neta determina la aceleración de un cuerpo." },
+                { "type": "latex", "content": "$$\\vec{F}_{\\text{net}} = m\\vec{a}$$" },
+                { "type": "code", "language": "python", "content": "m = 2\na = 3\nprint(m * a)" }
+              ] }
+            ] }
+          ] }
+        ] }
+      ]
+    }
   ]
 }

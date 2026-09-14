@@ -479,3 +479,36 @@ Si estás tomando cursos de HTML, CSS, JS y Git, estos son los conceptos clave q
 | **JSON** | Archivo `data.json` con contenido estructurado |
 | **Git / GitHub** | Control de versiones y despliegue |
 | **SHA-256** | Hash de contraseña (Web Crypto API) |
+
+---
+
+## 9. Biblioteca de notas
+
+Las notas de Matemáticas y Física se guardan en `data.json` dentro de la clave `notes`. Cada nota puede contener una jerarquía de `part`, `chapter`, `section` y `subsection`.
+
+Cada nodo puede incluir bloques con estos tipos:
+
+- `text`: texto normal.
+- `latex`: contenido matemático procesado por MathJax.
+- `code`: código mostrado sin ejecutar; admite `language` como `python` o `cpp`.
+- `quote`: cita o comentario destacado.
+
+El índice de una nota se genera automáticamente desde los títulos de la jerarquía. Las rutas directas tienen este formato:
+
+```text
+#nota/matematicas/basicas/calculo
+#nota/fisica/clasica/mecanica-newtoniana
+```
+
+### Administración y persistencia
+
+En modo administrador aparece el botón `Administrar notas`. Los borradores se guardan en `localStorage` bajo la clave `webjuan_notes_drafts`, por lo que no se pierde el contenido al recargar el navegador, pero todavía no se comparte entre dispositivos.
+
+Para publicar los cambios:
+
+1. Abrir `Administrar notas`.
+2. Guardar el borrador.
+3. Usar `Exportar data.json`.
+4. Confirmar el commit en GitHub.
+
+La exportación conserva las tarjetas existentes y añade la colección completa de notas. En una fase posterior se puede sustituir este flujo por una API autenticada sin cambiar el lector ni el formato de las notas.
