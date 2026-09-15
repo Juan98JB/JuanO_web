@@ -337,6 +337,22 @@
   ],
   "notes": [
     {
+      "id": "calculo",
+      "subject": "matematicas",
+      "category": "avanzadas",
+      "slug": "calculo",
+      "title": "Cálculo",
+      "desc": "Límites, derivadas, integrales y aplicaciones.",
+      "tags": [
+        "cálculo",
+        "derivadas",
+        "integrales"
+      ],
+      "status": "published",
+      "updatedAt": "2026-09-15",
+      "content": []
+    },
+    {
       "id": "mecanica-newtoniana",
       "subject": "matematicas",
       "category": "avanzadas",
@@ -370,22 +386,6 @@
       ]
     },
     {
-      "id": "calculo",
-      "subject": "matematicas",
-      "category": "avanzadas",
-      "slug": "calculo",
-      "title": "Cálculo",
-      "desc": "Límites, derivadas, integrales y aplicaciones.",
-      "tags": [
-        "cálculo",
-        "derivadas",
-        "integrales"
-      ],
-      "status": "published",
-      "updatedAt": "2026-09-15",
-      "content": []
-    },
-    {
       "id": "nota-1789456402338",
       "subject": "matematicas",
       "category": "basicas",
@@ -410,7 +410,7 @@
               "blocks": [
                 {
                   "type": "latex",
-                  "content": "\\begin{teorema}{Descomposición de Schur}\nSea $A \\in M_n(\\mathbb{C})$. Existe una matriz unitaria $U \\in M_n(\\mathbb{C})$ y una matriz triangular superior $T \\in M_n(\\mathbb{C})$ tales que:\n\\[\nA = UTU^*.\n\\]\n\\end{teorema}\n\n\\begin{demostracion}{}\nPara una matriz de orden 1 no hay nada que probar. Supongamos que toda matriz de orden $(n-1)\\times(n-1)$ puede triangularizarse como en el enunciado.\n\nSea $A$ una matriz cuadrada compleja de orden $n$. Dado que toda matriz cuadrada compleja de orden $n$ tiene al menos un valor propio $\\lambda$, podemos encontrar una base ortonormal $\\{\\mathbf{v}, \\mathbf{v}_2, \\dots, \\mathbf{v}_n\\}$ donde $\\mathbf{v}$ es un vector propio no nulo asociado a $\\lambda$. Con esta base formamos la matriz $V$:\n\\[\nV = \\begin{bmatrix}\n\\mathbf{v} & \\mathbf{v}_2 & \\cdots & \\mathbf{v}_n \n\\end{bmatrix} = \\begin{bmatrix}\n\\mathbf{v} & \\mathbf{V}_2\n\\end{bmatrix}.\n\\]\n\nUn cálculo directo muestra que:\n\\[\nV^*AV = \n\\begin{bmatrix}\n\\mathbf{v}^* \\\\\n\\mathbf{V}_2^*\n\\end{bmatrix}\n\\begin{bmatrix}\nA\\mathbf{v} & A\\mathbf{V}_2\n\\end{bmatrix} \n= \n\\begin{bmatrix}\n\\lambda & \\mathbf{v}^*A\\mathbf{V}_2 \\\\\n0 & \\mathbf{V}_2^*A\\mathbf{V}_2\n\\end{bmatrix}.\n\\]\n\\end{demostracion}"
+                  "content": "\\begin{theorem}[Descomposición de Schur] Sea $A \\in M_n(\\mathbb{C})$. Existe una matriz unitaria $U \\in M_n(\\mathbb{C})$ y una matriz triangular superior $T \\in M_n(\\mathbb{C})$ tales que \\[ A = UTU^*. \\] \\end{theorem} \\begin{proof} Para una matriz de orden $1$ no hay nada que probar. Supongamos, por hipótesis de inducción, que toda matriz de orden $(n-1)\\times(n-1)$ puede triangularizarse como en el enunciado. Sea $A$ una matriz cuadrada compleja de orden $n$. Dado que toda matriz cuadrada compleja tiene al menos un valor propio $\\lambda$, podemos encontrar un vector propio unitario $\\mathbf{v}$ asociado a $\\lambda$. Completando $\\mathbf{v}$ a una base ortonormal, obtenemos \\[ \\left\\{ \\mathbf{v},\\mathbf{v}_2,\\dots,\\mathbf{v}_n \\right\\}. \\] Con esta base formamos la matriz unitaria \\[ V = \\begin{bmatrix} \\mathbf{v} & \\mathbf{v}_2 & \\cdots & \\mathbf{v}_n \\end{bmatrix} = \\begin{bmatrix} \\mathbf{v} & \\mathbf{V}_2 \\end{bmatrix}, \\] donde \\[ \\mathbf{V}_2 = \\begin{bmatrix} \\mathbf{v}_2 & \\cdots & \\mathbf{v}_n \\end{bmatrix}. \\] Un cálculo directo muestra que \\[ V^*AV = \\begin{bmatrix} \\mathbf{v}^* \\\\ \\mathbf{V}_2^* \\end{bmatrix} \\begin{bmatrix} A\\mathbf{v} & A\\mathbf{V}_2 \\end{bmatrix}. \\] Como $\\mathbf{v}$ es un vector propio asociado a $\\lambda$, se tiene \\[ A\\mathbf{v} = \\lambda\\mathbf{v}. \\] Por tanto, \\[ V^*AV = \\begin{bmatrix} \\mathbf{v}^*A\\mathbf{v} & \\mathbf{v}^*A\\mathbf{V}_2 \\\\[4pt] \\mathbf{V}_2^*A\\mathbf{v} & \\mathbf{V}_2^*A\\mathbf{V}_2 \\end{bmatrix} = \\begin{bmatrix} \\lambda & \\mathbf{v}^*A\\mathbf{V}_2 \\\\[4pt] 0 & \\mathbf{V}_2^*A\\mathbf{V}_2 \\end{bmatrix}. \\] La matriz $\\mathbf{V}_2^*A\\mathbf{V}_2$ es una matriz de orden $(n-1)\\times(n-1)$. Por la hipótesis de inducción, existe una matriz unitaria $W \\in M_{n-1}(\\mathbb{C})$ tal que \\[ W^* \\left(\\mathbf{V}_2^*A\\mathbf{V}_2\\right) W = T_2, \\] donde $T_2$ es triangular superior. Definimos \\[ U = V \\begin{bmatrix} 1 & 0 \\\\ 0 & W \\end{bmatrix}. \\] Como producto de matrices unitarias, $U$ es unitaria. Además, \\[ U^*AU = \\begin{bmatrix} 1 & 0 \\\\ 0 & W^* \\end{bmatrix} V^*AV \\begin{bmatrix} 1 & 0 \\\\ 0 & W \\end{bmatrix} = \\begin{bmatrix} \\lambda & \\mathbf{v}^*A\\mathbf{V}_2W \\\\[4pt] 0 & T_2 \\end{bmatrix}. \\] Esta matriz es triangular superior. Denotándola por $T$, obtenemos \\[ U^*AU = T, \\] y, por consiguiente, \\[ A = UTU^*. \\] Esto demuestra la descomposición de Schur. \\end{proof}"
                 }
               ],
               "children": []
