@@ -419,24 +419,31 @@
     <!-- ADMINISTRADOR DE NOTAS -->
     <div class="notes-admin-overlay" id="notes-admin-overlay" aria-hidden="true">
         <div class="notes-admin-panel" role="dialog" aria-modal="true" aria-labelledby="notes-admin-title">
-            <button class="modal-close notes-admin-close" type="button">&times;</button>
-            <div class="notes-admin-heading">
-                <div>
-                    <h2 id="notes-admin-title">Taller de notas</h2>
-                    <p class="admin-help">Escribe por bloques o en modo fuente. Los cambios se guardan automáticamente en este navegador.</p>
+            <header class="notes-admin-heading">
+                <div class="notes-admin-brand">
+                    <button class="secondary-btn notes-sidebar-toggle" type="button" aria-controls="notes-library" aria-expanded="true">☰ Notas</button>
+                    <div>
+                        <p class="eyebrow">Modo concentración</p>
+                        <h2 id="notes-admin-title">Taller de notas</h2>
+                        <p class="admin-help">Fuente Markdown/directivas a la izquierda, resultado en vivo a la derecha.</p>
+                    </div>
                 </div>
-                <p id="note-editor-status" class="note-editor-status" role="status">Sin cambios</p>
-            </div>
+                <div class="notes-admin-header-actions">
+                    <p id="note-editor-status" class="note-editor-status" role="status">Sin cambios</p>
+                    <button class="save-btn note-save-btn" type="button">Guardar <kbd>Ctrl S</kbd></button>
+                    <button class="modal-close notes-admin-close" type="button" aria-label="Cerrar taller">&times;</button>
+                </div>
+            </header>
             <div class="notes-admin-layout">
-                <aside class="notes-library">
+                <aside class="notes-library" id="notes-library">
                     <button class="save-btn notes-new-btn" type="button">+ Nueva nota</button>
                     <input id="admin-notes-search" class="admin-notes-search" type="search" placeholder="Buscar notas...">
                     <div id="admin-notes-list" class="admin-notes-list"></div>
                 </aside>
 
                 <section class="note-workspace">
-                    <details class="note-metadata" open>
-                        <summary>Datos de la nota</summary>
+                    <details class="note-metadata">
+                        <summary>Configuración de nota <span>título, materia, categoría y etiquetas</span></summary>
                         <form id="note-editor-form" class="note-editor-form">
                             <input type="hidden" id="note-id-input">
                             <label>Título <input id="note-title-input" required></label>
@@ -479,14 +486,23 @@
 
                         <section class="note-compose-panel">
                             <div class="editor-tabs" role="tablist">
-                                <button class="editor-tab active" type="button" data-editor-mode="visual">Bloques</button>
-                                <button class="editor-tab" type="button" data-editor-mode="source">Fuente</button>
+                                <button class="editor-tab active" type="button" data-editor-mode="source">Fuente</button>
+                                <button class="editor-tab" type="button" data-editor-mode="visual">Bloques</button>
                                 <button class="editor-tab mobile-preview-tab" type="button" data-editor-mode="preview">Vista previa</button>
                             </div>
                             <p id="selected-node-label" class="selected-node-label">Selecciona una sección</p>
+                            <div class="note-source-toolbar" aria-label="Insertar contenido">
+                                <span>Insertar</span>
+                                <button type="button" data-editor-insert="% @text\n\n">Texto</button>
+                                <button type="button" data-editor-insert="% @latex\n$$\n\\int_{}^{} f(x) \\, dx\n$$\n">∫ Integral</button>
+                                <button type="button" data-editor-insert="% @latex\n$$\\sum_{i=1}^{n} a_i$$\n">Σ Suma</button>
+                                <button type="button" data-editor-insert="% @latex\n\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}\n">Matriz</button>
+                                <button type="button" data-editor-insert="% @latex\n\\begin{aligned}\n & x = y \\\\n & a = b\n\\end{aligned}\n">Alineada</button>
+                                <button type="button" data-editor-insert="% @code python\n\n">Código</button>
+                            </div>
                             <div id="visual-block-editor" class="visual-block-editor"></div>
                             <div id="source-editor" class="source-editor" hidden>
-                                <p class="source-help">Usa <code>% @text</code>, <code>% @latex</code>, <code>% @quote</code> o <code>% @code python</code> para separar bloques.</p>
+                                <p class="source-help">Directivas: <code>% @text</code>, <code>% @latex</code>, <code>% @quote</code> o <code>% @code python</code>. <kbd>Tab</kbd> inserta espacios.</p>
                                 <textarea id="note-source-input" rows="20" spellcheck="false"></textarea>
                             </div>
                             <div class="block-add-toolbar">
@@ -504,7 +520,6 @@
                     </div>
 
                     <div class="note-editor-actions">
-                        <button class="save-btn note-save-btn" type="button">Guardar ahora</button>
                         <button class="secondary-btn note-open-btn" type="button">Abrir nota</button>
                         <button class="secondary-btn note-backup-btn" type="button">Descargar respaldo</button>
                         <button class="secondary-btn visual-note-delete-btn" type="button">Eliminar nota</button>

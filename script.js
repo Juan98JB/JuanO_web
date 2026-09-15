@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const NODE_LABELS = { part: 'Parte', chapter: 'Capítulo', section: 'Sección', subsection: 'Subsección' };
   let visualEditorNote = null;
   let visualSelectedPath = [0];
-  let visualEditorMode = 'visual';
+  let visualEditorMode = 'source';
   let visualSaveTimer = null;
   let visualPreviewTimer = null;
 
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const pathValue = path.join('.');
       const selected = pathValue === visualSelectedPath.join('.') ? 'active' : '';
       const children = node.children?.length ? `<div class="outline-children">${outlineHtml(node.children, path)}</div>` : '';
-      return `<div class="outline-node"><button type="button" class="outline-node-btn ${selected}" data-node-path="${pathValue}"><span>${NODE_LABELS[node.type] || node.type}</span><strong>${escapeHtml(node.title || 'Sin título')}</strong></button>${children}</div>`;
+      return `<div class="outline-node" draggable="true" data-node-path="${pathValue}"><button type="button" class="outline-node-btn ${selected}" data-node-path="${pathValue}"><span>${NODE_LABELS[node.type] || node.type}</span><strong>${escapeHtml(node.title || 'Sin título')}</strong></button>${children}</div>`;
     }).join('');
   }
 
@@ -807,6 +807,33 @@ document.addEventListener('DOMContentLoaded', () => {
     visualSelectedPath = button.dataset.nodePath.split('.').map(Number);
     renderVisualOutline(); renderVisualNodeEditor(); scheduleVisualPreview();
   });
+  let draggedOutlinePath = null;
+  document.getElementById('note-outline')?.addEventListener('dragstart', e => {
+    const node = e.target.closest('.outline-node');
+    if (!node) return;
+    draggedOutlinePath = node.dataset.nodePath.split('.').map(Number);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', node.dataset.nodePath);
+  });
+  document.getElementById('note-outline')?.addEventListener('dragover', e => {
+    if (draggedOutlinePath) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+  });
+  document.getElementById('note-outline')?.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('.outline-node');
+    if (!target || !draggedOutlinePath) return;
+    const targetPath = target.dataset.nodePath.split('.').map(Number);
+    const sourceList = visualNodeList(draggedOutlinePath);
+    const targetList = visualNodeList(targetPath);
+    if (sourceList !== targetList || draggedOutlinePath.join('.') === targetPath.join('.')) return;
+    const sourceIndex = draggedOutlinePath[draggedOutlinePath.length - 1];
+    const targetIndex = targetPath[targetPath.length - 1];
+    const [moved] = sourceList.splice(sourceIndex, 1);
+    sourceList.splice(targetIndex > sourceIndex ? targetIndex - 1 : targetIndex, 0, moved);
+    visualSelectedPath = [...draggedOutlinePath.slice(0, -1), targetIndex > sourceIndex ? targetIndex - 1 : targetIndex];
+    draggedOutlinePath = null;
+    renderVisualOutline(); renderVisualNodeEditor(); markVisualEditorDirty();
+  });
   document.querySelector('.structure-add-part')?.addEventListener('click', () => {
     insertStructureNode('part', visualEditorNote.content, visualEditorNote.content.length);
     visualSelectedPath = [visualEditorNote.content.length - 1];
@@ -917,6 +944,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!node) return;
     node.blocks = sourceToBlocks(e.target.value);
     markVisualEditorDirty();
+  });
+  document.querySelector('.note-source-toolbar')?.addEventListener('click', e => {
+    const button = e.target.closest('[data-editor-insert]');
+    const source = document.getElementById('note-source-input');
+    const node = visualNodeAt();
+    if (!button || !source || !node) return;
+    if (visualEditorMode !== 'source') {
+      visualEditorMode = 'source';
+      source.value = blocksToSource(node.blocks || []);
+      applyVisualEditorMode();
+    }
+    const text = button.dataset.editorInsert.replace(/\\n/g, '\n');
+    source.setRangeText(text, source.selectionStart, source.selectionEnd, 'end');
+    node.blocks = sourceToBlocks(source.value);
+    source.focus();
+    markVisualEditorDirty();
+  });
+  document.querySelector('.notes-sidebar-toggle')?.addEventListener('click', e => {
+    const library = document.getElementById('notes-library');
+    const layout = document.querySelector('.notes-admin-layout');
+    const expanded = e.currentTarget.getAttribute('aria-expanded') === 'true';
+    e.currentTarget.setAttribute('aria-expanded', String(!expanded));
+    library?.classList.toggle('collapsed', expanded);
+    layout?.classList.toggle('library-collapsed', expanded);
+  });
+  document.getElementById('note-source-input')?.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    e.preventDefault();
+    e.target.setRangeText('  ', e.target.selectionStart, e.target.selectionEnd, 'end');
+  });
+  document.addEventListener('keydown', e => {
+    const overlay = document.getElementById('notes-admin-overlay');
+    if (!overlay?.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeVisualNotesAdmin(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault(); clearTimeout(visualSaveTimer); saveVisualNote('Borrador guardado ahora');
+    }
   });
   document.querySelector('.note-save-btn')?.addEventListener('click', () => { clearTimeout(visualSaveTimer); saveVisualNote('Borrador guardado ahora'); });
   document.querySelector('.note-open-btn')?.addEventListener('click', () => {
