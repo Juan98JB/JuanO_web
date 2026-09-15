@@ -1,0 +1,555 @@
+DOCUMENTACION DEL PROYECTO
+==========================
+
+Proyecto: Web personal de Juan O. Uribe - ESFM
+Ubicacion: C:\Users\juan9\Desktop\web_Juan
+Tipo: Sitio web estatico tipo SPA (Single Page Application)
+
+1. DESCRIPCION GENERAL
+-----------------------
+
+Este proyecto es un sitio web personal y educativo dedicado a matematicas,
+fisica, ciencias computacionales y ciencia de datos. La interfaz permite
+mostrar tarjetas de contenido, consultar notas educativas, visualizar formulas
+LaTeX y administrar contenido desde el navegador.
+
+La aplicacion esta construida principalmente con HTML5, CSS3 y JavaScript
+vanilla. No utiliza frameworks frontend ni un sistema de paquetes. El contenido
+inicial se almacena en data.json y las modificaciones realizadas desde el
+navegador se guardan en localStorage.
+
+El sitio puede ejecutarse localmente con el servidor incluido o publicarse como
+un sitio estatico, por ejemplo mediante GitHub Pages.
+
+2. ESTRUCTURA DE ARCHIVOS
+-------------------------
+
+index.html
+    Documento principal de la aplicacion. Contiene la barra de navegacion,
+    las paginas virtuales, el lector de notas, el panel de administracion y el
+    modal de contenido.
+
+styles.css
+    Hoja de estilos completa. Define colores, temas, tarjetas, animaciones,
+    formularios, lector de notas, panel administrativo y reglas responsive.
+
+script.js
+    Logica principal del frontend. Tiene la navegacion, carga de datos,
+    renderizado dinamico, editor de notas, autenticacion administrativa,
+    persistencia local y exportacion hacia GitHub.
+
+script.js.bak
+    Copia antigua del archivo JavaScript. No es cargada por index.html y no
+    debe modificarse para cambiar el funcionamiento actual.
+
+data.json
+    Fuente inicial de datos del sitio: tarjetas, materias, recomendaciones y
+    notas educativas.
+
+server.js
+    Servidor HTTP local escrito con Node.js sin dependencias externas. Sirve
+    los archivos estaticos y conserva un endpoint antiguo para guardar tarjetas.
+
+DOCUMENTACION.md
+    Documentacion anterior en formato Markdown. Parte de su informacion puede
+    estar desactualizada frente a la implementacion actual.
+
+DOCUMENTACION.txt
+    Este archivo. Documentacion actualizada del proyecto.
+
+.gitignore
+    Excluye server.js, images/, logs y archivos propios del sistema.
+
+3. TECNOLOGIAS Y SERVICIOS EXTERNOS
+------------------------------------
+
+HTML5
+    Estructura semantica de la pagina y formularios administrativos.
+
+CSS3
+    Variables CSS, Flexbox, CSS Grid, animaciones 3D, sombras, gradientes,
+    media queries y temas claro/oscuro.
+
+JavaScript ES6+
+    Manipulacion del DOM, eventos, fetch, promesas, async/await, plantillas
+    literales, Web Crypto API, FileReader y almacenamiento del navegador.
+
+JSON
+    Formato utilizado para el contenido inicial y para respaldos de notas.
+
+MathJax 3
+    Libreria cargada desde jsDelivr para convertir expresiones LaTeX en
+    formulas visuales dentro del lector de notas.
+
+Node.js
+    Necesario unicamente para ejecutar server.js durante el desarrollo local.
+    No se requiere npm install porque el servidor usa solo modulos nativos.
+
+GitHub API
+    Se utiliza desde el boton de exportacion para actualizar data.json en el
+    repositorio configurado en script.js.
+
+4. ESTRUCTURA DE LA INTERFAZ
+----------------------------
+
+La aplicacion utiliza una sola pagina HTML. Las secciones se ocultan o muestran
+mediante la clase CSS page.active.
+
+Secciones principales:
+
+page-novedades
+    Pagina inicial. Incluye presentacion personal, pestañas de Proyectos,
+    Notas, Ejercicios y Divulgacion, ademas de recomendaciones de lecturas,
+    canales, sitios web y cine.
+
+page-matematicas
+    Area educativa con busqueda, estadisticas, categorias, notas destacadas y
+    listado de notas agrupadas.
+
+page-fisica
+    Area con la misma estructura de matematicas, adaptada a categorias de
+    fisica clasica, moderna y matematica.
+
+page-computacion
+    Pagina informativa actualmente preparada para contenido futuro.
+
+page-datos
+    Pagina informativa actualmente preparada para contenido futuro.
+
+page-recomendaciones
+    Seccion reservada para el curriculum. Actualmente esta vacia.
+
+page-libro
+    Lector online de notas. Muestra la tabla de contenidos a la izquierda y el
+    contenido completo a la derecha.
+
+notes-admin-overlay
+    Taller administrativo para crear, editar, ordenar, previsualizar, guardar
+    y eliminar notas.
+
+content-modal
+    Modal utilizado para mostrar el contenido completo de tarjetas que todavia
+    no disponen de una nota tipo libro.
+
+5. NAVEGACION Y RUTAS
+---------------------
+
+La navegacion se realiza con hash routing y no requiere recargar la pagina.
+La funcion principal es showPage(pageId, mode, topic), que:
+
+- Oculta todas las secciones con clase page.
+- Activa la seccion solicitada.
+- Marca el enlace correspondiente en la barra superior.
+- Selecciona el modo Notas o Ejercicios.
+- Puede resaltar y desplazar hacia una tarjeta concreta.
+
+Rutas utilizadas:
+
+    #novedades
+    #matematicas
+    #matematicas/notas
+    #matematicas/ejercicios
+    #fisica/notas
+    #fisica/ejercicios
+    #libro/matematicas/basicas
+    #nota/matematicas/basicas/calculo
+    #nota/fisica/clasica/mecanica-newtoniana
+
+Al cargar la pagina se analiza window.location.hash para recuperar la vista
+solicitada. El logo devuelve a Novedades mediante un clic y abre el acceso
+administrativo mediante doble clic.
+
+6. CARGA Y RENDERIZADO DE DATOS
+-------------------------------
+
+Al iniciar la aplicacion, script.js ejecuta fetch('data.json'). Los datos se
+copian al objeto global DATA y luego se renderizan las siguientes areas:
+
+- Tarjetas de materias.
+- Tarjetas de Novedades.
+- Tarjetas hardcodeadas de recomendaciones y lecturas.
+- Contenido de Matemáticas y Física.
+- Notas publicadas y notas guardadas localmente.
+
+Las funciones principales son:
+
+renderSubjectCards()
+    Genera tarjetas de materias desde DATA.
+
+renderNovedadesCards()
+    Genera las tarjetas de Proyectos, Notas, Ejercicios y Divulgacion.
+
+renderSubjectContent(pageId, data)
+    Genera categorias, tarjetas destacadas y listados de notas.
+
+renderBook(pageId, category)
+    Abre la vista tipo libro para una categoria.
+
+renderNote(note)
+    Genera el lector de una nota y su tabla de contenidos.
+
+7. TARJETAS Y EDICION
+---------------------
+
+Las tarjetas poseen una cara frontal y una cara posterior. La animacion de
+volteo se realiza con transform: rotateY(180deg) y preserve-3d.
+
+En modo administrador, el icono de engranaje permite abrir el formulario de
+edicion. Dependiendo del tipo de tarjeta, se pueden editar:
+
+- Titulo.
+- Descripcion.
+- URL de destino.
+- URL de imagen.
+- Imagen local seleccionada desde un archivo.
+- Opacidad del fondo.
+- Gradiente o contenido de una tarjeta de materia.
+
+Al pulsar Guardar, los cambios se actualizan en la interfaz y se guardan en
+localStorage. La pagina no modifica automaticamente data.json al guardar una
+tarjeta.
+
+Las tarjetas con URL abren el destino en una pestaña nueva usando
+noopener,noreferrer. Las tarjetas de materias abren un modal o una nota tipo
+libro, segun exista contenido publicado.
+
+8. SISTEMA DE NOTAS
+-------------------
+
+Las notas se encuentran en la propiedad notes de data.json. Cada nota tiene,
+como minimo, los siguientes campos:
+
+    id
+    subject
+    category
+    slug
+    title
+    desc
+    tags
+    status
+    updatedAt
+    content
+
+subject identifica la materia: matematicas o fisica.
+category identifica la categoria dentro de la materia.
+status puede ser draft o published.
+slug se utiliza en las rutas directas.
+
+La propiedad content contiene un arbol jerarquico. Los nodos pueden ser:
+
+- part: parte principal.
+- chapter: capitulo.
+- section: seccion.
+- subsection: subseccion.
+
+Los nodos pueden contener bloques de contenido:
+
+- text: texto normal.
+- latex: formula procesada por MathJax.
+- code: codigo mostrado sin ejecutarse.
+- quote: cita o texto destacado.
+
+El lector genera automaticamente una tabla de contenidos a partir de los
+titulos del arbol. Los bloques de codigo incluyen un boton para copiar su
+contenido.
+
+9. EDITOR VISUAL DE NOTAS
+-------------------------
+
+El taller de notas se abre con el boton Administrar notas, visible solamente
+para el administrador.
+
+Funciones disponibles:
+
+- Buscar notas existentes.
+- Crear una nota nueva.
+- Editar titulo, materia, categoria, estado, descripcion y etiquetas.
+- Agregar partes, capitulos, secciones y subsecciones.
+- Crear elementos dentro de otro o despues del elemento seleccionado.
+- Renombrar, mover y eliminar elementos.
+- Agregar bloques de texto, LaTeX, codigo y citas.
+- Reordenar o eliminar bloques.
+- Editar en modo Bloques o Fuente.
+- Ver una previsualizacion en vivo.
+- Insertar atajos comunes de LaTeX.
+- Abrir la nota en el lector.
+- Descargar un respaldo JSON.
+- Guardar o eliminar una nota local.
+
+En modo Fuente se utilizan directivas como:
+
+    % @text
+    Explicacion de la nota.
+
+    % @latex
+    $$E = mc^2$$
+
+    % @code python
+    print("Ejemplo")
+
+El editor guarda automaticamente despues de un breve retraso. Las notas
+editadas se almacenan en localStorage, no directamente en data.json.
+
+10. PERSISTENCIA DEL NAVEGADOR
+------------------------------
+
+Clave principal:
+
+    webjuan_cards
+
+Esta clave contiene un objeto con cambios de tarjetas indexados por su id y una
+propiedad especial para notas:
+
+    webjuan_notes_drafts
+
+Tambien se utiliza la clave theme para guardar el tema seleccionado.
+
+sessionStorage utiliza estas claves:
+
+    webjuan_admin
+        Indica si la sesion actual tiene permisos administrativos.
+
+    gh_token
+        Guarda temporalmente el token usado para exportar data.json a GitHub.
+
+La informacion guardada en localStorage pertenece al navegador y al origen
+actual. No se comparte automaticamente entre equipos, navegadores o usuarios.
+
+Para borrar los cambios locales se puede ejecutar en la consola del navegador:
+
+    localStorage.removeItem('webjuan_cards')
+
+Tambien se puede borrar la informacion del sitio desde las herramientas de
+desarrollo del navegador.
+
+11. MODO ADMINISTRADOR
+----------------------
+
+El acceso se activa mediante doble clic en la marca ESFM de la barra superior.
+La funcion sha256 calcula el hash SHA-256 de la contrasena con Web Crypto API y
+lo compara con el hash definido en script.js.
+
+Cuando el acceso es valido:
+
+- Aparecen los engranajes de las tarjetas.
+- Aparece Administrar notas.
+- Aparece Exportar data.json.
+- Se permite editar contenido.
+
+Un segundo doble clic permite cerrar la sesion administrativa.
+
+IMPORTANTE: esta autenticacion no constituye seguridad real. El hash y toda la
+logica se entregan al navegador, por lo que una persona con conocimientos
+tecnicos puede inspeccionar o modificar el JavaScript. Para proteger contenido
+real se necesita un backend con autenticacion y autorizacion del lado servidor.
+
+12. EXPORTACION A GITHUB
+------------------------
+
+El boton Exportar data.json combina los datos iniciales con los cambios de
+localStorage y conserva las notas. Luego utiliza la API de GitHub para:
+
+1. Leer el archivo data.json actual y obtener su SHA.
+2. Crear una nueva version codificada en Base64.
+3. Enviar una peticion PUT al repositorio configurado.
+4. Crear un commit con el mensaje "Actualizar data.json desde admin panel".
+
+Configuracion actual en script.js:
+
+    GH_OWNER = 'Juan98JB'
+    GH_REPO = 'JuanO_web'
+    GH_BRANCH = 'main'
+
+El token debe tener permiso Contents: write. Se solicita mediante prompt y se
+guarda solamente en sessionStorage durante la sesion.
+
+RECOMENDACION DE SEGURIDAD: no usar un token personal con permisos amplios.
+Utilizar un token de minimo privilegio, revocarlo si se expone y considerar
+reemplazar este flujo por un backend o GitHub Actions.
+
+13. FORMATO DE data.json
+------------------------
+
+Las colecciones principales son:
+
+proyectos
+    Tarjetas de proyectos.
+
+notas
+    Tarjetas generales de novedades.
+
+ejercicios
+    Ejercicios generales.
+
+divulgacion
+    Articulos y recursos de divulgacion.
+
+matematicas
+    Tarjetas de materias de matematicas.
+
+fisica
+    Tarjetas de materias de fisica.
+
+computacion
+    Tarjetas de ciencias computacionales.
+
+datos
+    Tarjetas de ciencia de datos.
+
+lecturas
+    Libros y lecturas recomendadas.
+
+recomendaciones
+    Canales, sitios web y peliculas.
+
+notes
+    Notas estructuradas para el lector tipo libro.
+
+Campos habituales de una tarjeta:
+
+    id          Identificador unico.
+    title       Titulo visible.
+    desc        Descripcion corta.
+    content     Contenido completo, principalmente en materias.
+    url         Enlace externo.
+    gradient    Fondo CSS alternativo.
+    bg          Fondo guardado anteriormente.
+    imageUrl    URL o imagen Base64.
+    opacity     Opacidad del fondo.
+    icon        Icono de la tarjeta.
+
+Al editar JSON manualmente se debe conservar la sintaxis valida, las comillas,
+las comas y la estructura de arreglos. Un error de sintaxis impedira cargar los
+datos mediante fetch.
+
+14. ESTILOS Y RESPONSIVE DESIGN
+-------------------------------
+
+El tema claro se define en :root y el oscuro en html[data-theme="dark"]. El
+boton con clase theme-toggle alterna ambos valores y guarda la preferencia en
+localStorage.
+
+Componentes visuales principales:
+
+- Barra de navegacion fija con efecto blur.
+- Tarjetas con gradientes, imagenes y efecto hover.
+- Tarjetas volteables en 3D.
+- Panel tipo libro para notas.
+- Modal para contenido completo.
+- Panel administrativo con editor de tres columnas.
+
+Breakpoints principales:
+
+1024 px
+    El lector tipo libro pasa a una disposicion vertical y el panel principal
+    de novedades reduce su ancho.
+
+768 px
+    Las columnas se apilan, la navegacion se envuelve, las categorias ocupan
+    una columna y el panel de administracion se reorganiza.
+
+480 px
+    Se reducen tamanos, las pestañas ocupan dos columnas y las tarjetas se
+    adaptan a pantallas pequenas.
+
+15. EJECUCION LOCAL
+-------------------
+
+Requisito:
+
+- Node.js instalado y disponible en PATH.
+
+Desde la carpeta del proyecto ejecutar:
+
+    node server.js
+
+Despues abrir en el navegador:
+
+    http://localhost:3000
+
+Para detener el servidor pulsar Ctrl+C en la terminal.
+
+Tambien es posible abrir index.html directamente, pero se recomienda usar el
+servidor local porque fetch('data.json') puede bloquearse por politicas del
+navegador al usar el protocolo file://.
+
+16. FUNCIONAMIENTO DE server.js
+-------------------------------
+
+server.js utiliza los modulos nativos http, fs y path de Node.js.
+
+Funciones principales:
+
+serveStatic(req, res)
+    Sirve index.html, CSS, JavaScript, JSON e imagenes.
+
+handleSave(req, res)
+    Recibe una peticion POST /api/save, intenta actualizar data.json y puede
+    guardar imagenes Base64 en la carpeta images/.
+
+El frontend actual guarda los cambios principalmente en localStorage y utiliza
+la API de GitHub para exportar. Por eso el endpoint /api/save no es necesario
+para el flujo normal y no debe exponerse publicamente sin autenticacion.
+
+17. PUBLICACION
+---------------
+
+Para publicar una version estatica:
+
+1. Modificar los archivos necesarios.
+2. Probar el sitio localmente.
+3. Validar que data.json sea JSON correcto.
+4. Ejecutar:
+
+       git add .
+       git commit -m "Descripcion del cambio"
+       git push
+
+5. Esperar la reconstruccion o publicacion de GitHub Pages.
+
+server.js no es necesario en GitHub Pages. La publicacion estatica necesita
+index.html, styles.css, script.js y data.json. MathJax se descarga desde la
+CDN configurada en index.html cuando el visitante tiene acceso a Internet.
+
+18. CONSIDERACIONES DE SEGURIDAD
+--------------------------------
+
+- La validacion del administrador ocurre del lado del cliente y es evadible.
+- Un token de GitHub introducido en el navegador puede ser robado por malware,
+  extensiones o scripts comprometidos.
+- No incluir tokens, contrasenas ni secretos en data.json.
+- Validar siempre las URLs e imagenes que se agreguen al contenido.
+- No ejecutar como servicio publico el endpoint /api/save sin controles de
+  autenticacion, validacion y limites de tamano.
+- Las notas y tarjetas locales no son una copia de seguridad remota hasta que
+  se exportan o se descargan.
+- Las imagenes Base64 pueden aumentar mucho el tamano de data.json.
+
+19. MANTENIMIENTO RECOMENDADO
+-----------------------------
+
+- Mantener un respaldo de data.json antes de exportar cambios.
+- Revisar el contenido de localStorage si una tarjeta aparece desactualizada.
+- Eliminar script.js.bak si deja de ser necesario para conservar el proyecto.
+- Mantener actualizada la documentacion cuando cambien las rutas o claves de
+  almacenamiento.
+- Probar navegacion, tema, lector de notas, editor, exportacion y responsive
+  despues de cada cambio importante.
+- Usar un backend para autenticacion y persistencia si el sitio administra
+  contenido sensible o debe ser utilizado por varias personas.
+
+20. RESUMEN DEL FLUJO DE LA APLICACION
+--------------------------------------
+
+1. El navegador carga index.html.
+2. Se cargan styles.css, script.js y MathJax.
+3. script.js configura eventos y analiza la ruta hash.
+4. Se solicita data.json mediante fetch.
+5. Se combinan los datos iniciales con localStorage.
+6. Se renderizan tarjetas, categorias y notas.
+7. El usuario navega sin recargar la pagina.
+8. El administrador puede editar y guardar cambios localmente.
+9. Las notas pueden visualizarse como libro con formulas y codigo.
+10. El administrador puede descargar un respaldo o exportar data.json a GitHub.
+
+FIN DE LA DOCUMENTACION
