@@ -288,12 +288,13 @@
     },
     {
       "id": "lectura_4",
-      "title": "Lectura 4",
-      "desc": "Lectura recomendada 4",
+      "title": "Advanced Linear and Matrix Algebra (Nathaniel Johnston)",
+      "desc": "",
       "url": "",
       "gradient": "linear-gradient(135deg, #232526 0%, #414345 100%)",
       "bg": "",
-      "opacity": 1
+      "opacity": 1,
+      "imageUrl": "https://media.springernature.com/w316/springer-static/cover/book/978-3-030-52815-7.jpg?as=webp"
     }
   ],
   "recomendaciones": [
@@ -336,50 +337,86 @@
   ],
   "notes": [
     {
-      "id": "calculo",
+      "id": "mecanica-newtoniana",
       "subject": "matematicas",
-      "category": "basicas",
-      "slug": "calculo",
-      "title": "Cálculo",
-      "desc": "Límites, derivadas, integrales y aplicaciones.",
-      "tags": ["cálculo", "derivadas", "integrales"],
+      "category": "avanzadas",
+      "slug": "analisis-funcional",
+      "title": "Análisis Funcional",
+      "desc": "",
+      "tags": [
+        "Análisis funcional"
+      ],
       "status": "published",
-      "updatedAt": "2026-09-13",
+      "updatedAt": "2026-09-15",
       "content": [
-        { "type": "part", "title": "Fundamentos", "children": [
-          { "type": "chapter", "title": "Límites", "children": [
-            { "type": "section", "title": "Definición", "children": [
-              { "type": "subsection", "title": "Idea intuitiva", "blocks": [
-                { "type": "text", "content": "El límite describe el valor al que se aproxima una función cuando su variable se acerca a un punto." },
-                { "type": "latex", "content": "$$\\lim_{x \\to a} f(x) = L$$" }
-              ] }
-            ] }
-          ] }
-        ] }
+        {
+          "type": "part",
+          "title": "Las leyes de Newton",
+          "blocks": [],
+          "children": [
+            {
+              "type": "chapter",
+              "title": "Ley de Inercia ",
+              "blocks": [
+                {
+                  "type": "latex",
+                  "content": "$\\textbf{Ley de Inercía}$ Un cuerpo permanece en estado de reposo o velocidad constante (aceleración cero) cuando ninguna fuerza externa actúa sobre él. Esto es\n\n\\[\n\\mathbf{a} = 0 \\quad \\text{cuando} \\quad \\mathbf{F} = 0.\n\\]"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
       ]
     },
     {
-      "id": "mecanica-newtoniana",
-      "subject": "fisica",
-      "category": "clasica",
-      "slug": "mecanica-newtoniana",
-      "title": "Mecánica Newtoniana",
-      "desc": "Leyes del movimiento, sistemas de partículas y cuerpos rígidos.",
-      "tags": ["mecánica", "newton", "física clásica"],
+      "id": "calculo",
+      "subject": "matematicas",
+      "category": "avanzadas",
+      "slug": "calculo",
+      "title": "Cálculo",
+      "desc": "Límites, derivadas, integrales y aplicaciones.",
+      "tags": [
+        "cálculo",
+        "derivadas",
+        "integrales"
+      ],
       "status": "published",
-      "updatedAt": "2026-09-13",
+      "updatedAt": "2026-09-15",
+      "content": []
+    },
+    {
+      "id": "nota-1789456402338",
+      "subject": "matematicas",
+      "category": "basicas",
+      "slug": "algebra-lineal",
+      "title": "Álgebra Lineal",
+      "desc": "Álgebra lineal y análisis matricial",
+      "tags": [
+        "Espacios Vectoriales",
+        "matrices."
+      ],
+      "status": "draft",
+      "updatedAt": "2026-09-15",
       "content": [
-        { "type": "part", "title": "Mecánica clásica", "children": [
-          { "type": "chapter", "title": "Leyes de Newton", "children": [
-            { "type": "section", "title": "Segunda ley", "children": [
-              { "type": "subsection", "title": "Forma vectorial", "blocks": [
-                { "type": "text", "content": "La fuerza neta determina la aceleración de un cuerpo." },
-                { "type": "latex", "content": "$$\\vec{F}_{\\text{net}} = m\\vec{a}$$" },
-                { "type": "code", "language": "python", "content": "m = 2\na = 3\nprint(m * a)" }
-              ] }
-            ] }
-          ] }
-        ] }
+        {
+          "type": "part",
+          "title": "Descomposición de matrices.",
+          "blocks": [],
+          "children": [
+            {
+              "type": "chapter",
+              "title": "Triangulación de Shurt",
+              "blocks": [
+                {
+                  "type": "latex",
+                  "content": "\\begin{teorema}{Descomposición de Schur}\nSea $A \\in M_n(\\mathbb{C})$. Existe una matriz unitaria $U \\in M_n(\\mathbb{C})$ y una matriz triangular superior $T \\in M_n(\\mathbb{C})$ tales que:\n\\[\nA = UTU^*.\n\\]\n\\end{teorema}\n\n\\begin{demostracion}{}\nPara una matriz de orden 1 no hay nada que probar. Supongamos que toda matriz de orden $(n-1)\\times(n-1)$ puede triangularizarse como en el enunciado.\n\nSea $A$ una matriz cuadrada compleja de orden $n$. Dado que toda matriz cuadrada compleja de orden $n$ tiene al menos un valor propio $\\lambda$, podemos encontrar una base ortonormal $\\{\\mathbf{v}, \\mathbf{v}_2, \\dots, \\mathbf{v}_n\\}$ donde $\\mathbf{v}$ es un vector propio no nulo asociado a $\\lambda$. Con esta base formamos la matriz $V$:\n\\[\nV = \\begin{bmatrix}\n\\mathbf{v} & \\mathbf{v}_2 & \\cdots & \\mathbf{v}_n \n\\end{bmatrix} = \\begin{bmatrix}\n\\mathbf{v} & \\mathbf{V}_2\n\\end{bmatrix}.\n\\]\n\nUn cálculo directo muestra que:\n\\[\nV^*AV = \n\\begin{bmatrix}\n\\mathbf{v}^* \\\\\n\\mathbf{V}_2^*\n\\end{bmatrix}\n\\begin{bmatrix}\nA\\mathbf{v} & A\\mathbf{V}_2\n\\end{bmatrix} \n= \n\\begin{bmatrix}\n\\lambda & \\mathbf{v}^*A\\mathbf{V}_2 \\\\\n0 & \\mathbf{V}_2^*A\\mathbf{V}_2\n\\end{bmatrix}.\n\\]\n\\end{demostracion}"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
       ]
     }
   ]
