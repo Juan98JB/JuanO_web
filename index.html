@@ -14,8 +14,19 @@
     <!-- MathJax for LaTeX support -->
     <script>
       MathJax = {
+        loader: {
+          load: ['[tex]/ams', '[tex]/newcommand', '[tex]/noundefined']
+        },
         tex: {
-          inlineMath: [['$', '$'], ['\\(', '\\)']]
+          packages: { '[+]': ['ams', 'newcommand', 'noundefined'] },
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true,
+          processEnvironments: true
+        },
+        noundefined: {
+          color: '#b42318',
+          background: '#fff1f0'
         },
         svg: {
           fontCache: 'global'
@@ -461,6 +472,7 @@
                                         <option value="published">Publicada</option>
                                     </select>
                                 </label>
+                                <label>Tema vinculado <select id="note-topic-input"><option value="">Sin tema vinculado</option></select></label>
                             </div>
                             <label>Descripción <input id="note-desc-input"></label>
                             <label>Etiquetas <input id="note-tags-input" placeholder="cálculo, derivadas, análisis"></label>

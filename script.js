@@ -178,6 +178,43 @@ document.addEventListener('DOMContentLoaded', () => {
     return d.innerHTML;
   }
 
+  function typesetMathJax(elements) {
+    if (!window.MathJax) return;
+    const targets = elements || undefined;
+    const typeset = () => {
+      try {
+        if (targets) MathJax.typesetClear?.(targets);
+        return MathJax.typesetPromise(targets);
+      } catch (error) {
+        console.warn('No se pudo interpretar LaTeX:', error);
+        return Promise.resolve();
+      }
+    };
+    const ready = window.MathJax.startup?.promise || Promise.resolve();
+    ready.then(typeset).catch(error => console.warn('Error de MathJax:', error));
+  }
+
+  function topicItemsFor(subject) {
+    return subject === 'fisica' ? PHY_DATA : MATH_DATA;
+  }
+
+  function noteTopicId(note, subject = note?.subject, data = topicItemsFor(subject)) {
+    if (!note || !subject) return null;
+    const candidates = [note.topicId, note.id, note.slug, slugify(note.title)]
+      .filter(Boolean).map(String);
+    const aliases = {
+      'algebra-lineal': 'algebra',
+      'algebra-elemental-y-lineal': 'algebra',
+      'calculo-diferencial': 'calculo'
+    };
+    for (const item of Object.values(data).flat()) {
+      const itemSlug = slugify(item.title);
+      if (candidates.includes(item.id) || candidates.includes(itemSlug) || candidates.includes(aliases[itemSlug])) return item.id;
+      if (item.id === 'algebra' && candidates.some(candidate => candidate.includes('algebra'))) return item.id;
+    }
+    return null;
+  }
+
   function renderSubjectCards() {
     const local = loadLocalData();
     document.querySelectorAll('.subject-grid').forEach(grid => {
@@ -277,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const desc = escapeHtml(item.desc);
         if (isFeatured) {
           return `
-            <div class="math-featured__card" data-id="${item.id}" data-category="${item.cat}">
+            <div class="math-featured__card" data-id="${item.id}" data-topic-id="${item.topicId || item.id}" data-category="${item.cat}">
               <div class="math-featured__icon">${icon}</div>
               <div class="math-featured__info">
                 <h4>${title}</h4>
@@ -286,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         }
         return `
-          <div class="math-note-card" data-id="${item.id}" data-category="${item.cat}">
+          <div class="math-note-card" data-id="${item.id}" data-topic-id="${item.topicId || item.id}" data-category="${item.cat}">
             <div class="math-note-card__icon">${icon}</div>
             <h4>${title}</h4>
             <p>${desc}</p>
@@ -309,12 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const allItems = [];
     Object.keys(data).forEach(cat => {
       data[cat].forEach(item => {
-        const note = availableNotes.find(savedNote => savedNote.id === item.id && savedNote.subject === pageId);
-        allItems.push({ ...item, ...(note || {}), cat });
+        const note = availableNotes.find(savedNote => savedNote.subject === pageId && noteTopicId(savedNote, pageId, data) === item.id);
+        if (note) allItems.push({ ...item, ...note, topicId: item.id, cat });
       });
-    });
-    availableNotes.filter(note => note.subject === pageId).forEach(note => {
-      if (!allItems.some(item => item.id === note.id)) allItems.push({ ...note, cat: note.category });
     });
 
     const total = allItems.length;
@@ -334,7 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (notes) {
         const grouped = Object.keys(data).map(cat => {
-          const items = data[cat].map(item => ({ ...item, cat }));
+          const items = allItems.filter(item => item.cat === cat);
+          if (!items.length) return '';
           return `
             <div class="math-subsection">
               <h4 class="math-subsection__title">${categoryLabel(cat)}</h4>
@@ -383,7 +418,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderInlineBlock(block) {
-    const content = escapeHtml(block.content || '').replace(/\n/g, '<br>');
+    const content = block.type === 'latex'
+      ? escapeHtml(block.content || '')
+      : escapeHtml(block.content || '').replace(/\n/g, '<br>');
     if (block.type === 'code') {
       return `<pre class="note-code"><code>${escapeHtml(block.content || '')}</code><button class="copy-code-btn" type="button">Copiar</button></pre>`;
     }
@@ -420,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tocEl.querySelectorAll('li').forEach(li => li.classList.remove('active'));
       link.parentElement.classList.add('active');
     }));
-    if (window.MathJax) MathJax.typesetPromise([contentEl]);
+    typesetMathJax([contentEl]);
   }
 
   function filterNotesByCategory(pageId, category) {
@@ -599,6 +636,15 @@ document.addEventListener('DOMContentLoaded', () => {
     select.value = options.some(([value]) => value === selected) ? selected : options[0]?.[0];
   }
 
+  function renderTopicOptions(subject, selected) {
+    const select = document.getElementById('note-topic-input');
+    if (!select) return;
+    const items = Object.values(topicItemsFor(subject)).flat();
+    select.innerHTML = '<option value="">Sin tema vinculado</option>' + items
+      .map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.title)}</option>`).join('');
+    select.value = items.some(item => item.id === selected) ? selected : '';
+  }
+
   function renderVisualNotesList() {
     const list = document.getElementById('admin-notes-list');
     if (!list) return;
@@ -621,6 +667,10 @@ document.addEventListener('DOMContentLoaded', () => {
     visualEditorNote.desc = document.getElementById('note-desc-input').value.trim();
     visualEditorNote.tags = document.getElementById('note-tags-input').value.split(',').map(tag => tag.trim()).filter(Boolean);
     visualEditorNote.slug = slugify(visualEditorNote.title);
+    const selectedTopicId = document.getElementById('note-topic-input')?.value;
+    const linkedTopicId = selectedTopicId || noteTopicId(visualEditorNote, visualEditorNote.subject, topicItemsFor(visualEditorNote.subject));
+    if (linkedTopicId) visualEditorNote.topicId = linkedTopicId;
+    else delete visualEditorNote.topicId;
     visualEditorNote.updatedAt = new Date().toISOString().slice(0, 10);
   }
 
@@ -730,10 +780,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     preview.innerHTML = renderNode(node, 2, []);
-    if (window.MathJax) {
-      MathJax.typesetClear?.([preview]);
-      MathJax.typesetPromise([preview]).catch(() => {});
-    }
+    typesetMathJax([preview]);
   }
 
   function fillVisualEditor(note) {
@@ -745,6 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('note-title-input').value = visualEditorNote.title || '';
     document.getElementById('note-subject-input').value = visualEditorNote.subject || 'matematicas';
     renderCategoryOptions(visualEditorNote.subject || 'matematicas', visualEditorNote.category);
+    renderTopicOptions(visualEditorNote.subject || 'matematicas', visualEditorNote.topicId || noteTopicId(visualEditorNote));
     document.getElementById('note-status-input').value = visualEditorNote.status || 'draft';
     document.getElementById('note-desc-input').value = visualEditorNote.desc || '';
     document.getElementById('note-tags-input').value = (visualEditorNote.tags || []).join(', ');
@@ -797,7 +845,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('note-editor-form')?.addEventListener('submit', e => e.preventDefault());
   document.getElementById('note-editor-form')?.addEventListener('input', e => {
-    if (e.target.id === 'note-subject-input') renderCategoryOptions(e.target.value, null);
+    if (e.target.id === 'note-subject-input') {
+      renderCategoryOptions(e.target.value, null);
+      renderTopicOptions(e.target.value, null);
+    }
     syncVisualMetadata(); markVisualEditorDirty();
   });
   document.getElementById('note-editor-form')?.addEventListener('change', () => { syncVisualMetadata(); markVisualEditorDirty(); });
@@ -1405,9 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBook(pageId, category);
       showPage('libro');
       window.history.replaceState(null, '', `#libro/${pageId}/${category}`);
-      if (window.MathJax) {
-        MathJax.typesetPromise();
-      }
+      typesetMathJax();
       return;
     }
 
@@ -1415,12 +1464,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const mathCard = target.closest('.math-note-card, .math-featured__card');
     if (mathCard && !target.closest('.gear')) {
       const id = mathCard.dataset.id;
+      const topicId = mathCard.dataset.topicId || id;
       const cat = mathCard.dataset.category;
       const page = mathCard.closest('.page');
       const pageId = page.id.replace('page-', '');
       const data = pageId === 'fisica' ? PHY_DATA : MATH_DATA;
       const items = data[cat] || [];
-      const item = items.find(i => i.id === id);
+      const item = items.find(i => i.id === topicId);
       if (item) {
         const modeTab = page.querySelector('.mode-tab.active');
         const mode = modeTab?.dataset.mode || 'notas';
@@ -1431,7 +1481,7 @@ document.addEventListener('DOMContentLoaded', () => {
           renderNote(note);
           showPage('libro');
           window.history.replaceState(null, '', `#nota/${note.subject}/${note.category}/${note.slug || note.id}`);
-          if (window.MathJax) MathJax.typesetPromise();
+          typesetMathJax();
         } else {
           openModal(item.title, item.desc + '\n\nEsta nota aún no tiene contenido publicado.');
           window.history.replaceState(null, '', `#${pageId}/${mode}/${id}`);

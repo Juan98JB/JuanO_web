@@ -1657,7 +1657,7 @@ main {
   font: inherit;
 }
 .note-editor-form textarea { font-family: Consolas, monospace; font-size: 0.88rem; }
-.admin-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.admin-form-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .note-editor-actions { display: flex; gap: 0.75rem; align-items: center; }
 .secondary-btn { border: 1px solid var(--border-color); border-radius: 6px; padding: 0.65rem 1rem; background: transparent; color: var(--text-primary); cursor: pointer; }
 .secondary-btn:hover { border-color: var(--accent); color: var(--accent); }
