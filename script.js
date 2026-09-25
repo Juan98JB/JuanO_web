@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   const STORAGE_KEY = 'webjuan_cards';
-  const ADMIN_HASH = 'f8a76a4e4278bc3f2f3e5f26a5362f49ebe48fb98ba0c3de3b0aab9f7ed00b43';
+  const ADMIN_HASH = 'b5aa4d905e792d03fb60fa198eb658886423975f3f4cd1fde3c89c00712410c4';
 
   /* ============================================
      Admin mode — oculta edición a visitantes

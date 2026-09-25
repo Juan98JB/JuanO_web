@@ -238,7 +238,7 @@ function renderNovedadesCards() {
 **Autenticación**: El JS calcula el hash SHA-256 de la contraseña ingresada y lo compara con un hash almacenado. La contraseña real **no está en el código**.
 
 ```js
-const ADMIN_HASH = '77473b09a7543e9fa3caba8e6afb9ace3d8dcbac027c0c2af39f628fbce4cc25';
+const ADMIN_HASH = 'b5aa4d905e792d03fb60fa198eb658886423975f3f4cd1fde3c89c00712410c4';
 
 async function loginAdmin() {
   const pass = prompt('Ingresa la contraseña de administrador:');
