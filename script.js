@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     page?.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
     const modeTab = page?.querySelector(`.mode-tab[data-mode="${activeMode}"]`);
     if (modeTab) modeTab.classList.add('active');
+    page?.querySelectorAll('.mode-tab').forEach(tab => tab.setAttribute('aria-pressed', String(tab === modeTab)));
     page?.querySelectorAll('.subject-mode').forEach(m => m.classList.remove('active'));
     const modeContent = page?.querySelector(`.subject-mode[data-mode="${activeMode}"]`);
     if (modeContent) modeContent.classList.add('active');
@@ -105,6 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const parts = hash.split('/');
       if (parts[0] === 'nota' && parts.length >= 4) {
         return { page: 'nota', mode: null, topic: parts.slice(1).join('/') };
+      }
+      if (parts[0] === 'ejercicio' && parts.length >= 4) {
+        return { page: 'ejercicio', mode: null, topic: parts.slice(1).join('/') };
       }
       if (parts.length >= 2 && (parts[1] === 'notas' || parts[1] === 'ejercicios')) {
         return { page: parts[0], mode: parts[1], topic: parts.slice(2).join('/') || null };
@@ -138,8 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const { page: initialPage, mode: initialMode, topic: initialTopic } = parseHash();
   if (initialPage === 'libro' && initialTopic) {
-    const [subPageId, cat] = initialTopic.split('/');
-    if (subPageId && cat) renderBook(subPageId, cat);
+    const [subPageId, possibleMode, category] = initialTopic.split('/');
+    const mode = possibleMode === 'ejercicios' || possibleMode === 'notas' ? possibleMode : 'notas';
+    const cat = category || possibleMode;
+    if (subPageId && cat) renderBook(subPageId, cat, mode);
   }
   showPage(initialPage || 'novedades', initialMode, initialTopic);
 
@@ -149,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const DATA = {};
 
   const NOTES_STORAGE_KEY = 'webjuan_notes_drafts';
+  const EXERCISES_STORAGE_KEY = 'webjuan_exercise_drafts';
   let activeNoteId = null;
 
   function loadNotes() {
@@ -163,6 +170,22 @@ document.addEventListener('DOMContentLoaded', () => {
     saveLocalData(local);
   }
 
+  function loadExercises() {
+    const stored = loadLocalData()[EXERCISES_STORAGE_KEY];
+    if (Array.isArray(stored)) return stored;
+    return Array.isArray(DATA.practiceExercises) ? DATA.practiceExercises : [];
+  }
+
+  function saveExercises(exercises) {
+    const local = loadLocalData();
+    local[EXERCISES_STORAGE_KEY] = exercises;
+    saveLocalData(local);
+  }
+
+  function isExerciseReady(exercise) {
+    return Boolean(exercise.prompt?.trim() && exercise.solution?.trim());
+  }
+
   function noteById(id) {
     return loadNotes().find(note => note.id === id) || null;
   }
@@ -175,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str;
-    return d.innerHTML;
+    return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function typesetMathJax(elements) {
@@ -307,27 +330,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const page = document.getElementById(`page-${pageId}`);
     if (!page) return;
 
-    function buildCards(items, isFeatured) {
+    function buildCards(items, isFeatured, materialType) {
       return items.map(item => {
-        const icon = escapeHtml(item.icon);
-        const title = escapeHtml(item.title);
-        const desc = escapeHtml(item.desc);
+        const icon = escapeHtml(item.icon || (materialType === 'exercise' ? '✎' : '∑'));
+        const title = escapeHtml(item.title || 'Sin título');
+        const desc = escapeHtml(item.desc || '');
+        const cardClass = isFeatured ? 'math-featured__card' : 'math-note-card';
         if (isFeatured) {
           return `
-            <div class="math-featured__card" data-id="${item.id}" data-topic-id="${item.topicId || item.id}" data-category="${item.cat}">
+            <div role="button" tabindex="0" class="${cardClass}" data-material-type="${materialType}" data-id="${escapeHtml(item.id)}" data-topic-id="${escapeHtml(item.topicId || item.id)}" data-category="${escapeHtml(item.cat)}" data-search="${escapeHtml(`${item.title || ''} ${item.desc || ''} ${(item.tags || []).join(' ')} ${item.prompt || ''}`)}">
               <div class="math-featured__icon">${icon}</div>
               <div class="math-featured__info">
                 <h4>${title}</h4>
                 <p>${desc}</p>
               </div>
+              <span class="material-type-label">${materialType === 'exercise' ? 'Ejercicio' : 'Nota'}</span>
             </div>`;
         }
         return `
-          <div class="math-note-card" data-id="${item.id}" data-topic-id="${item.topicId || item.id}" data-category="${item.cat}">
+          <div role="button" tabindex="0" class="${cardClass}" data-material-type="${materialType}" data-id="${escapeHtml(item.id)}" data-topic-id="${escapeHtml(item.topicId || item.id)}" data-category="${escapeHtml(item.cat)}" data-search="${escapeHtml(`${item.title || ''} ${item.desc || ''} ${(item.tags || []).join(' ')} ${item.prompt || ''}`)}">
             <div class="math-note-card__icon">${icon}</div>
             <h4>${title}</h4>
             <p>${desc}</p>
-            <span class="math-note-card__action">Abrir &rarr;</span>
+            <span class="math-note-card__action">${materialType === 'exercise' ? 'Resolver' : 'Leer'} &rarr;</span>
+            <span class="material-type-label">${materialType === 'exercise' ? 'Ejercicio' : 'Nota'}</span>
           </div>`;
       }).join('');
     }
@@ -342,29 +368,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const prefix = pageId === 'matematicas' ? 'math' : 'phy';
 
-    const availableNotes = loadNotes().filter(note => isAdmin() || note.status === 'published');
-    const allItems = [];
-    Object.keys(data).forEach(cat => {
-      data[cat].forEach(item => {
-        const note = availableNotes.find(savedNote => savedNote.subject === pageId && noteTopicId(savedNote, pageId, data) === item.id);
-        if (note) allItems.push({ ...item, ...note, topicId: item.id, cat });
-      });
+    const isVisible = item => isAdmin() || item.status === 'published';
+    const topicItems = Object.values(data).flat();
+    const allNotes = loadNotes().filter(note => note.subject === pageId && isVisible(note)).map(note => {
+      const topicId = noteTopicId(note, pageId, data);
+      const topic = topicItems.find(item => item.id === topicId);
+      return { ...note, icon: topic?.icon, desc: note.desc || topic?.desc || '', topicId: topicId || note.id, cat: note.category };
     });
-
-    const total = allItems.length;
+    const allExercises = loadExercises().filter(exercise => exercise.subject === pageId && (isAdmin() || (isVisible(exercise) && isExerciseReady(exercise))))
+      .map(exercise => ({ ...exercise, icon: '✎', cat: exercise.category }));
     const cats = Object.keys(data).length;
     const notasEl = document.getElementById(`${prefix}-stat-notas`);
     const ejerEl = document.getElementById(`${prefix}-stat-ejercicios`);
     const catsEl = document.getElementById(`${prefix}-stat-categorias`);
-    if (notasEl) notasEl.textContent = total;
-    if (ejerEl) ejerEl.textContent = total;
+    if (notasEl) notasEl.textContent = allNotes.length;
+    if (ejerEl) ejerEl.textContent = allExercises.length;
     if (catsEl) catsEl.textContent = cats;
 
-    ['notas', 'ejercicios'].forEach(mode => {
+    [['notas', allNotes, 'note'], ['ejercicios', allExercises, 'exercise']].forEach(([mode, allItems, materialType]) => {
       const featured = document.getElementById(`${prefix}-featured-${mode}`);
       const notes = document.getElementById(`${prefix}-notes-${mode}`);
       if (featured) {
-        featured.innerHTML = buildCards(allItems.slice(0, 3), true);
+        featured.innerHTML = buildCards(allItems.slice(0, 3), true, materialType);
+        featured.closest('.math-section').hidden = !allItems.length;
       }
       if (notes) {
         const grouped = Object.keys(data).map(cat => {
@@ -374,19 +400,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="math-subsection">
               <h4 class="math-subsection__title">${categoryLabel(cat)}</h4>
               <div class="math-subsection__grid">
-                ${buildCards(items, false)}
+                ${buildCards(items, false, materialType)}
               </div>
             </div>`;
         }).join('');
-        notes.innerHTML = grouped;
+        notes.innerHTML = grouped || `<p class="material-empty">${materialType === 'exercise' ? 'Aún no hay ejercicios publicados en esta materia.' : 'Aún no hay notas publicadas en esta materia.'}</p>`;
       }
     });
   }
 
-  function renderBook(pageId, category) {
+  function renderBook(pageId, category, mode = 'notas') {
     const data = pageId === 'fisica' ? PHY_DATA : MATH_DATA;
-    const items = data[category] || [];
-    const notes = loadNotes().filter(note => (isAdmin() || note.status === 'published') && note.subject === pageId && note.category === category);
+    const materials = mode === 'ejercicios' ? loadExercises() : loadNotes();
+    const items = materials.filter(item => (isAdmin() || (item.status === 'published' && (mode !== 'ejercicios' || isExerciseReady(item)))) && item.subject === pageId && item.category === category);
     const labels = {
       matematicas: { basicas: 'Matemáticas Básicas', avanzadas: 'Matemáticas Avanzadas', aplicadas: 'Matemáticas Aplicadas' },
       fisica: { clasica: 'Física Clásica', moderna: 'Física Moderna', matematica: 'Física Matemática' }
@@ -396,25 +422,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentEl = document.getElementById('book-content-container');
     document.getElementById('book-title').textContent = titleText;
 
-    if (notes.length) {
-      renderNote(notes[0]);
+    if (items.length) {
+      if (mode === 'ejercicios') renderExercise(items[0]);
+      else renderNote(items[0]);
       return;
     }
 
-    const fallback = items.map(item => ({
-      id: item.id,
-      subject: pageId,
-      category,
-      title: item.title,
-      desc: item.desc,
-      content: [{ type: 'chapter', title: item.title, children: [{ type: 'section', title: 'Contenido', blocks: [{ type: 'text', content: 'Esta nota aún no tiene contenido publicado.' }] }] }]
-    }));
-    if (!fallback.length) {
-      tocEl.innerHTML = '<li><span>No hay notas en esta categoría.</span></li>';
-      contentEl.innerHTML = '<article class="book-content"><h1>Sin notas todavía</h1><p>Activa el modo administrador para crear la primera nota.</p></article>';
-      return;
+    tocEl.innerHTML = '<li><span>No hay material en esta categoría.</span></li>';
+    contentEl.innerHTML = `<article class="book-content"><h1>Aún no hay ${mode === 'ejercicios' ? 'ejercicios' : 'notas'}</h1><p>Cuando se publique material para esta categoría, aparecerá aquí.</p></article>`;
+  }
+
+  function renderExercise(exercise) {
+    const tocEl = document.getElementById('book-toc');
+    const contentEl = document.getElementById('book-content-container');
+    const subjectLabel = exercise.subject === 'fisica' ? 'Física' : 'Matemáticas';
+    const categoryText = categoryLabelFor(exercise.subject, exercise.category);
+    const textBlock = value => escapeHtml(value || '').replace(/\n/g, '<br>');
+    document.getElementById('book-title').textContent = exercise.title || 'Ejercicio';
+    tocEl.innerHTML = '<li><span>Ejercicio</span></li>';
+    contentEl.innerHTML = `
+      <article class="book-content exercise-reading">
+        <p class="note-breadcrumb">${escapeHtml(subjectLabel)} / ${escapeHtml(categoryText)} / Ejercicios</p>
+        <p class="exercise-reading__eyebrow">Problema para resolver</p>
+        <h1>${escapeHtml(exercise.title || 'Ejercicio')}</h1>
+        ${exercise.desc ? `<p class="note-description">${escapeHtml(exercise.desc)}</p>` : ''}
+        ${exercise.difficulty ? `<span class="exercise-difficulty">${escapeHtml(exercise.difficulty)}</span>` : ''}
+        <section class="exercise-reading__prompt"><h2>Enunciado</h2><div>${textBlock(exercise.prompt)}</div></section>
+        ${exercise.hint ? `<details class="exercise-disclosure exercise-hint"><summary>Ver una pista</summary><div>${textBlock(exercise.hint)}</div></details>` : ''}
+        <details class="exercise-disclosure exercise-solution"><summary>Ver solución explicada</summary><div>${textBlock(exercise.solution)}</div></details>
+      </article>`;
+    const backBtn = document.querySelector('.book-back-btn');
+    if (backBtn) {
+      backBtn.dataset.backTo = exercise.subject;
+      backBtn.innerHTML = `&larr; Volver a ${subjectLabel}`;
     }
-    renderNote(fallback[0]);
+    typesetMathJax([contentEl]);
+  }
+
+  function categoryLabelFor(subject, category) {
+    const labels = {
+      matematicas: { basicas: 'Matemáticas Básicas', avanzadas: 'Matemáticas Avanzadas', aplicadas: 'Matemáticas Aplicadas' },
+      fisica: { clasica: 'Física Clásica', moderna: 'Física Moderna', matematica: 'Física Matemática' }
+    };
+    return labels[subject]?.[category] || category || '';
   }
 
   function renderInlineBlock(block) {
@@ -444,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentEl = document.getElementById('book-content-container');
     const links = [];
     let content = `<article class="book-content"><p class="note-breadcrumb">${escapeHtml(note.subject)} / ${escapeHtml(note.category)}</p><h1>${escapeHtml(note.title)}</h1><p class="note-description">${escapeHtml(note.desc || '')}</p>`;
+    if (!note.content?.length) content += '<p class="material-empty">Esta nota todavía no tiene contenido desarrollado.</p>';
     (note.content || []).forEach(node => { content += renderNode(node, 1, links); });
     content += '</article>';
     contentEl.innerHTML = content;
@@ -588,6 +639,25 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  function emptyExercise() {
+    const id = `ejercicio-${Date.now()}`;
+    return {
+      id,
+      subject: 'matematicas',
+      category: 'basicas',
+      slug: id,
+      title: 'Nuevo ejercicio',
+      desc: '',
+      tags: [],
+      difficulty: 'Intermedio',
+      status: 'draft',
+      updatedAt: new Date().toISOString().slice(0, 10),
+      prompt: '',
+      hint: '',
+      solution: ''
+    };
+  }
+
   /* ============================================
      Visual notes editor
      ============================================ */
@@ -602,6 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const NODE_CHILD_TYPES = { part: 'chapter', chapter: 'section', section: 'subsection' };
   const NODE_LABELS = { part: 'Parte', chapter: 'Capítulo', section: 'Sección', subsection: 'Subsección' };
   let visualEditorNote = null;
+  let visualEditorExercise = null;
+  let visualEditorType = 'note';
   let visualSelectedPath = [0];
   let visualEditorMode = 'source';
   let visualSaveTimer = null;
@@ -649,40 +721,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = document.getElementById('admin-notes-list');
     if (!list) return;
     const query = document.getElementById('admin-notes-search')?.value.trim().toLowerCase() || '';
-    const notes = loadNotes().filter(note => `${note.title} ${note.desc} ${(note.tags || []).join(' ')}`.toLowerCase().includes(query));
-    list.innerHTML = notes.map(note => `
-      <button type="button" class="admin-note-item ${note.id === activeNoteId ? 'active' : ''}" data-note-id="${escapeHtml(note.id)}">
-        <strong>${escapeHtml(note.title)}</strong>
-        <small>${escapeHtml(note.subject)} / ${escapeHtml(note.category)}</small>
-        <span class="note-status ${note.status || 'draft'}">${note.status === 'published' ? 'Publicada' : 'Borrador'}</span>
-      </button>`).join('') || '<p class="admin-empty">No se encontraron notas.</p>';
+    const matches = item => `${item.title} ${item.desc} ${(item.tags || []).join(' ')} ${item.prompt || ''}`.toLowerCase().includes(query);
+    const materials = [
+      ...loadNotes().filter(matches).map(item => ({ ...item, materialType: 'note' })),
+      ...loadExercises().filter(matches).map(item => ({ ...item, materialType: 'exercise' }))
+    ];
+    list.innerHTML = materials.map(item => {
+      const active = item.id === activeNoteId && item.materialType === visualEditorType;
+      return `
+        <button type="button" class="admin-note-item ${active ? 'active' : ''}" data-material-id="${escapeHtml(item.id)}" data-material-type="${item.materialType}">
+          <span class="admin-material-type">${item.materialType === 'exercise' ? 'Ejercicio' : 'Nota'}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(item.subject)} / ${escapeHtml(item.category)}</small>
+          <span class="note-status ${item.status || 'draft'}">${item.status === 'published' ? 'Publicada' : 'Borrador'}</span>
+        </button>`;
+    }).join('') || '<p class="admin-empty">No se encontraron materiales.</p>';
   }
 
   function syncVisualMetadata() {
-    if (!visualEditorNote) return;
-    visualEditorNote.title = document.getElementById('note-title-input').value.trim() || 'Nueva nota';
-    visualEditorNote.subject = document.getElementById('note-subject-input').value;
-    visualEditorNote.category = document.getElementById('note-category-input').value;
-    visualEditorNote.status = document.getElementById('note-status-input').value;
-    visualEditorNote.desc = document.getElementById('note-desc-input').value.trim();
-    visualEditorNote.tags = document.getElementById('note-tags-input').value.split(',').map(tag => tag.trim()).filter(Boolean);
-    visualEditorNote.slug = slugify(visualEditorNote.title);
+    const item = visualEditorType === 'exercise' ? visualEditorExercise : visualEditorNote;
+    if (!item) return;
+    item.title = document.getElementById('note-title-input').value.trim() || (visualEditorType === 'exercise' ? 'Nuevo ejercicio' : 'Nueva nota');
+    item.subject = document.getElementById('note-subject-input').value;
+    item.category = document.getElementById('note-category-input').value;
+    item.status = document.getElementById('note-status-input').value;
+    item.desc = document.getElementById('note-desc-input').value.trim();
+    item.tags = document.getElementById('note-tags-input').value.split(',').map(tag => tag.trim()).filter(Boolean);
+    item.slug = slugify(item.title);
+    item.updatedAt = new Date().toISOString().slice(0, 10);
+    if (visualEditorType === 'exercise') {
+      item.difficulty = document.getElementById('exercise-difficulty-input').value;
+      item.prompt = document.getElementById('exercise-prompt-input').value;
+      item.hint = document.getElementById('exercise-hint-input').value;
+      item.solution = document.getElementById('exercise-solution-input').value;
+      return;
+    }
     const selectedTopicId = document.getElementById('note-topic-input')?.value;
-    const linkedTopicId = selectedTopicId || noteTopicId(visualEditorNote, visualEditorNote.subject, topicItemsFor(visualEditorNote.subject));
-    if (linkedTopicId) visualEditorNote.topicId = linkedTopicId;
-    else delete visualEditorNote.topicId;
-    visualEditorNote.updatedAt = new Date().toISOString().slice(0, 10);
+    const linkedTopicId = selectedTopicId || noteTopicId(item, item.subject, topicItemsFor(item.subject));
+    if (linkedTopicId) item.topicId = linkedTopicId;
+    else delete item.topicId;
   }
 
   function saveVisualNote(message = 'Guardado localmente') {
-    if (!visualEditorNote) return;
+    const item = visualEditorType === 'exercise' ? visualEditorExercise : visualEditorNote;
+    if (!item) return;
     syncVisualMetadata();
-    const notes = loadNotes().filter(note => note.id !== visualEditorNote.id);
-    notes.push(cloneNote(visualEditorNote));
-    saveNotes(notes);
-    activeNoteId = visualEditorNote.id;
+    if (visualEditorType === 'exercise') {
+      saveExercises([...loadExercises().filter(exercise => exercise.id !== item.id), cloneNote(item)]);
+    } else {
+      saveNotes([...loadNotes().filter(note => note.id !== item.id), cloneNote(item)]);
+    }
+    activeNoteId = item.id;
     renderVisualNotesList();
     document.getElementById('note-editor-status').textContent = message;
+    renderVisualExercisePreview();
     renderSubjectContent('matematicas', MATH_DATA);
     renderSubjectContent('fisica', PHY_DATA);
   }
@@ -691,7 +783,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('note-editor-status').textContent = 'Guardando...';
     clearTimeout(visualSaveTimer);
     visualSaveTimer = setTimeout(() => saveVisualNote(), 700);
-    scheduleVisualPreview();
+    if (visualEditorType === 'exercise') renderVisualExercisePreview();
+    else scheduleVisualPreview();
   }
 
   function outlineHtml(nodes, parentPath = []) {
@@ -741,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('visual-block-editor').hidden = visualEditorMode !== 'visual';
     document.getElementById('source-editor').hidden = visualEditorMode !== 'source';
     document.getElementById('note-live-preview').classList.toggle('mobile-active', visualEditorMode === 'preview');
-    document.querySelector('.block-add-toolbar').hidden = visualEditorMode === 'preview';
+    document.querySelector('.block-add-toolbar').hidden = visualEditorMode !== 'visual';
   }
 
   function renderVisualNodeEditor() {
@@ -783,29 +876,63 @@ document.addEventListener('DOMContentLoaded', () => {
     typesetMathJax([preview]);
   }
 
-  function fillVisualEditor(note) {
-    visualEditorNote = cloneNote(note);
-    visualEditorNote.content ||= [];
-    activeNoteId = visualEditorNote.id;
-    visualSelectedPath = visualEditorNote.content.length ? [0] : [];
-    document.getElementById('note-id-input').value = visualEditorNote.id;
-    document.getElementById('note-title-input').value = visualEditorNote.title || '';
-    document.getElementById('note-subject-input').value = visualEditorNote.subject || 'matematicas';
-    renderCategoryOptions(visualEditorNote.subject || 'matematicas', visualEditorNote.category);
-    renderTopicOptions(visualEditorNote.subject || 'matematicas', visualEditorNote.topicId || noteTopicId(visualEditorNote));
-    document.getElementById('note-status-input').value = visualEditorNote.status || 'draft';
-    document.getElementById('note-desc-input').value = visualEditorNote.desc || '';
-    document.getElementById('note-tags-input').value = (visualEditorNote.tags || []).join(', ');
+  function renderVisualExercisePreview() {
+    const preview = document.getElementById('exercise-preview-content');
+    if (!preview || !visualEditorExercise) return;
+    const textBlock = value => escapeHtml(value || '').replace(/\n/g, '<br>');
+    preview.innerHTML = `
+      <p class="exercise-reading__eyebrow">Vista de lector</p>
+      <h2>${escapeHtml(visualEditorExercise.title || 'Nuevo ejercicio')}</h2>
+      ${visualEditorExercise.desc ? `<p>${escapeHtml(visualEditorExercise.desc)}</p>` : ''}
+      ${visualEditorExercise.difficulty ? `<span class="exercise-difficulty">${escapeHtml(visualEditorExercise.difficulty)}</span>` : ''}
+      <h3>Enunciado</h3><div>${textBlock(visualEditorExercise.prompt) || '<span class="admin-empty">El enunciado aparecerá aquí.</span>'}</div>
+      ${visualEditorExercise.hint ? `<details class="exercise-disclosure"><summary>Ver una pista</summary><div>${textBlock(visualEditorExercise.hint)}</div></details>` : ''}
+      <details class="exercise-disclosure"><summary>Ver solución explicada</summary><div>${textBlock(visualEditorExercise.solution) || '<span class="admin-empty">Añade la solución paso a paso.</span>'}</div></details>`;
+    typesetMathJax([preview]);
+  }
+
+  function fillVisualEditor(item, type = 'note') {
+    visualEditorType = type;
+    visualEditorNote = type === 'note' ? cloneNote(item) : null;
+    visualEditorExercise = type === 'exercise' ? cloneNote(item) : null;
+    if (visualEditorNote) visualEditorNote.content ||= [];
+    const material = type === 'exercise' ? visualEditorExercise : visualEditorNote;
+    activeNoteId = material.id;
+    visualSelectedPath = visualEditorNote?.content.length ? [0] : [];
+    document.getElementById('note-id-input').value = material.id;
+    document.getElementById('note-title-input').value = material.title || '';
+    document.getElementById('note-subject-input').value = material.subject || 'matematicas';
+    renderCategoryOptions(material.subject || 'matematicas', material.category);
+    renderTopicOptions(material.subject || 'matematicas', material.topicId || noteTopicId(material));
+    document.getElementById('note-topic-input').closest('label').hidden = type === 'exercise';
+    document.getElementById('note-status-input').value = material.status || 'draft';
+    document.getElementById('note-desc-input').value = material.desc || '';
+    document.getElementById('note-tags-input').value = (material.tags || []).join(', ');
+    document.getElementById('exercise-prompt-input').value = material.prompt || '';
+    document.getElementById('exercise-hint-input').value = material.hint || '';
+    document.getElementById('exercise-solution-input').value = material.solution || '';
+    document.getElementById('exercise-difficulty-input').value = material.difficulty || 'Intermedio';
+    document.getElementById('exercise-editor-fields').hidden = type !== 'exercise';
+    document.getElementById('note-compose-layout').hidden = type === 'exercise';
+    document.getElementById('exercise-preview-panel').hidden = type !== 'exercise';
+    document.querySelector('.note-open-btn').textContent = type === 'exercise' ? 'Vista previa' : 'Vista previa';
+    document.querySelector('.visual-note-delete-btn').textContent = type === 'exercise' ? 'Eliminar ejercicio' : 'Eliminar nota';
+    document.querySelector('.note-metadata').open = type === 'exercise' || material.title === 'Nueva nota';
     document.getElementById('note-editor-status').textContent = 'Sin cambios';
     renderVisualNotesList();
     renderVisualOutline();
     renderVisualNodeEditor();
-    scheduleVisualPreview();
+    if (type === 'exercise') renderVisualExercisePreview();
+    else scheduleVisualPreview();
   }
 
   function openVisualNotesAdmin() {
     const overlay = document.getElementById('notes-admin-overlay');
-    fillVisualEditor(loadNotes()[0] || emptyNote());
+    const firstNote = loadNotes()[0];
+    const firstExercise = loadExercises()[0];
+    if (firstNote) fillVisualEditor(firstNote, 'note');
+    else if (firstExercise) fillVisualEditor(firstExercise, 'exercise');
+    else fillVisualEditor(emptyNote(), 'note');
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -813,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeVisualNotesAdmin() {
     clearTimeout(visualSaveTimer);
-    if (visualEditorNote) saveVisualNote();
+    if (visualEditorNote || visualEditorExercise) saveVisualNote();
     const overlay = document.getElementById('notes-admin-overlay');
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
@@ -831,17 +958,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.notes-admin-overlay')?.addEventListener('click', e => { if (e.target.id === 'notes-admin-overlay') closeVisualNotesAdmin(); });
   document.querySelector('.notes-new-btn')?.addEventListener('click', () => {
     clearTimeout(visualSaveTimer);
-    if (visualEditorNote) saveVisualNote();
-    fillVisualEditor(emptyNote());
+    if (visualEditorNote || visualEditorExercise) saveVisualNote();
+    fillVisualEditor(emptyNote(), 'note');
+  });
+  document.querySelector('.exercises-new-btn')?.addEventListener('click', () => {
+    clearTimeout(visualSaveTimer);
+    if (visualEditorNote || visualEditorExercise) saveVisualNote();
+    fillVisualEditor(emptyExercise(), 'exercise');
   });
   document.getElementById('admin-notes-search')?.addEventListener('input', renderVisualNotesList);
   document.getElementById('admin-notes-list')?.addEventListener('click', e => {
-    const button = e.target.closest('[data-note-id]');
+    const button = e.target.closest('[data-material-id]');
     if (!button) return;
     clearTimeout(visualSaveTimer);
-    if (visualEditorNote) saveVisualNote();
-    const note = noteById(button.dataset.noteId);
-    if (note) fillVisualEditor(note);
+    if (visualEditorNote || visualEditorExercise) saveVisualNote();
+    const type = button.dataset.materialType;
+    const item = type === 'exercise' ? loadExercises().find(exercise => exercise.id === button.dataset.materialId) : noteById(button.dataset.materialId);
+    if (item) fillVisualEditor(item, type);
   });
   document.getElementById('note-editor-form')?.addEventListener('submit', e => e.preventDefault());
   document.getElementById('note-editor-form')?.addEventListener('input', e => {
@@ -851,10 +984,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     syncVisualMetadata(); markVisualEditorDirty();
   });
-  document.getElementById('note-editor-form')?.addEventListener('change', () => { syncVisualMetadata(); markVisualEditorDirty(); });
+  document.getElementById('note-editor-form')?.addEventListener('change', e => {
+    if (visualEditorType === 'exercise' && e.target.id === 'note-status-input' && e.target.value === 'published') {
+      const prompt = document.getElementById('exercise-prompt-input').value.trim();
+      const solution = document.getElementById('exercise-solution-input').value.trim();
+      if (!prompt || !solution) {
+        e.target.value = 'draft';
+        saveVisualNote('Añade el enunciado y la solución antes de publicar');
+        return;
+      }
+    }
+    syncVisualMetadata(); markVisualEditorDirty();
+  });
   document.getElementById('note-outline')?.addEventListener('click', e => {
     const button = e.target.closest('[data-node-path]');
     if (!button) return;
+    if (!visualEditorNote) return;
     visualSelectedPath = button.dataset.nodePath.split('.').map(Number);
     renderVisualOutline(); renderVisualNodeEditor(); scheduleVisualPreview();
   });
@@ -1036,23 +1181,34 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.note-save-btn')?.addEventListener('click', () => { clearTimeout(visualSaveTimer); saveVisualNote('Borrador guardado ahora'); });
   document.querySelector('.note-open-btn')?.addEventListener('click', () => {
     saveVisualNote();
-    const note = cloneNote(visualEditorNote);
+    const item = cloneNote(visualEditorType === 'exercise' ? visualEditorExercise : visualEditorNote);
     closeVisualNotesAdmin();
-    renderNote(note); showPage('libro');
-    window.history.replaceState(null, '', `#nota/${note.subject}/${note.category}/${note.slug || note.id}`);
+    if (visualEditorType === 'exercise') {
+      renderExercise(item); showPage('libro');
+      window.history.replaceState(null, '', `#ejercicio/${item.subject}/${item.category}/${item.slug || item.id}`);
+    } else {
+      renderNote(item); showPage('libro');
+      window.history.replaceState(null, '', `#nota/${item.subject}/${item.category}/${item.slug || item.id}`);
+    }
   });
   document.querySelector('.note-backup-btn')?.addEventListener('click', () => {
     saveVisualNote();
-    const blob = new Blob([JSON.stringify(loadNotes(), null, 2)], { type: 'application/json' });
+    const backup = { notes: loadNotes(), practiceExercises: loadExercises() };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `notas-respaldo-${new Date().toISOString().slice(0, 10)}.json`;
     link.click(); URL.revokeObjectURL(link.href);
   });
   document.querySelector('.visual-note-delete-btn')?.addEventListener('click', () => {
-    if (!activeNoteId || !confirm('¿Eliminar esta nota del borrador local?')) return;
-    saveNotes(loadNotes().filter(note => note.id !== activeNoteId));
-    fillVisualEditor(loadNotes()[0] || emptyNote());
+    if (!activeNoteId || !confirm(`¿Eliminar ${visualEditorType === 'exercise' ? 'este ejercicio' : 'esta nota'} del borrador local?`)) return;
+    if (visualEditorType === 'exercise') {
+      saveExercises(loadExercises().filter(exercise => exercise.id !== activeNoteId));
+      fillVisualEditor(loadExercises()[0] || emptyExercise(), 'exercise');
+    } else {
+      saveNotes(loadNotes().filter(note => note.id !== activeNoteId));
+      fillVisualEditor(loadNotes()[0] || emptyNote(), 'note');
+    }
   });
 
   fetch('data.json')
@@ -1069,6 +1225,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const [subject, category, slug] = route.topic.split('/');
         const note = loadNotes().find(item => (isAdmin() || item.status === 'published') && item.subject === subject && item.category === category && (item.slug === slug || item.id === slug));
         if (note) { renderNote(note); showPage('libro'); }
+      } else if (route.page === 'ejercicio' && route.topic) {
+        const [subject, category, slug] = route.topic.split('/');
+        const exercise = loadExercises().find(item => (isAdmin() || (item.status === 'published' && isExerciseReady(item))) && item.subject === subject && item.category === category && (item.slug === slug || item.id === slug));
+        if (exercise) { renderExercise(exercise); showPage('libro'); }
+      } else if (route.page === 'libro' && route.topic) {
+        const [subject, possibleMode, category] = route.topic.split('/');
+        const mode = possibleMode === 'ejercicios' || possibleMode === 'notas' ? possibleMode : 'notas';
+        renderBook(subject, category || possibleMode, mode);
+        showPage('libro');
       }
       applyGearVisibility();
     })
@@ -1268,7 +1433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const local = loadLocalData();
     const merged = {};
     for (const [key, items] of Object.entries(DATA)) {
-      if (key === 'notes') continue;
+      if (key === 'notes' || key === 'practiceExercises') continue;
       merged[key] = items.map(item => {
         const saved = local[item.id];
         if (!saved) return { ...item };
@@ -1284,6 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     merged.notes = loadNotes();
+    merged.practiceExercises = loadExercises();
     const content = JSON.stringify(merged, null, 2);
 
     let token = sessionStorage.getItem('gh_token');
@@ -1452,10 +1618,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const page = mathCat.closest('.page');
       const pageId = page.id.replace('page-', '');
       
-      // Ir a la vista tipo libro para cualquier categoría
-      renderBook(pageId, category);
+      // Ir a la categoría en el modo seleccionado.
+      const mode = page.querySelector('.mode-tab.active')?.dataset.mode || 'notas';
+      renderBook(pageId, category, mode);
       showPage('libro');
-      window.history.replaceState(null, '', `#libro/${pageId}/${category}`);
+      window.history.replaceState(null, '', `#libro/${pageId}/${mode}/${category}`);
       typesetMathJax();
       return;
     }
@@ -1468,24 +1635,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const cat = mathCard.dataset.category;
       const page = mathCard.closest('.page');
       const pageId = page.id.replace('page-', '');
-      const data = pageId === 'fisica' ? PHY_DATA : MATH_DATA;
-      const items = data[cat] || [];
-      const item = items.find(i => i.id === topicId);
-      if (item) {
-        const modeTab = page.querySelector('.mode-tab.active');
-        const mode = modeTab?.dataset.mode || 'notas';
-        page.querySelectorAll('.math-note-card, .math-featured__card').forEach(c => c.classList.remove('active-topic'));
-        mathCard.classList.add('active-topic');
-        const note = noteById(id);
-        if (note) {
-          renderNote(note);
-          showPage('libro');
-          window.history.replaceState(null, '', `#nota/${note.subject}/${note.category}/${note.slug || note.id}`);
-          typesetMathJax();
-        } else {
-          openModal(item.title, item.desc + '\n\nEsta nota aún no tiene contenido publicado.');
-          window.history.replaceState(null, '', `#${pageId}/${mode}/${id}`);
-        }
+      const materialType = mathCard.dataset.materialType || 'note';
+      page.querySelectorAll('.math-note-card, .math-featured__card').forEach(c => c.classList.remove('active-topic'));
+      mathCard.classList.add('active-topic');
+      const item = materialType === 'exercise'
+        ? loadExercises().find(exercise => exercise.id === id && (isAdmin() || (exercise.status === 'published' && isExerciseReady(exercise))))
+        : noteById(id);
+      if (item && (isAdmin() || item.status === 'published')) {
+        if (materialType === 'exercise') renderExercise(item);
+        else renderNote(item);
+        showPage('libro');
+        const routeName = materialType === 'exercise' ? 'ejercicio' : 'nota';
+        window.history.replaceState(null, '', `#${routeName}/${item.subject}/${item.category}/${item.slug || item.id}`);
+        typesetMathJax();
+      } else {
+        openModal('Material no disponible', 'Este material aún no está publicado.');
       }
       return;
     }
@@ -1516,6 +1680,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { copyButton.textContent = 'Copiar'; }, 1200);
       });
     }
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.key !== 'Enter' && e.key !== ' ') || !e.target.closest('.math-note-card, .math-featured__card')) return;
+    e.preventDefault();
+    e.target.closest('.math-note-card, .math-featured__card').click();
   });
 
   /* ============================================
@@ -1588,23 +1758,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const page = input.closest('.page');
       if (!page) return;
       const cards = page.querySelectorAll('.math-note-card, .math-featured__card');
+      const feedback = page.querySelector('.search-feedback');
       if (query.length === 0) {
         cards.forEach(c => c.style.display = '');
         page.querySelectorAll('.math-subsection').forEach(s => s.style.display = '');
+        if (feedback) feedback.hidden = true;
         const activeCat = page.querySelector('.math-category.active');
         if (!activeCat) return;
         filterNotesByCategory(page.id.replace('page-', ''), activeCat.dataset.category);
         return;
       }
       cards.forEach(card => {
-        const title = card.querySelector('h4')?.textContent?.toLowerCase() || '';
-        const desc = card.querySelector('p')?.textContent?.toLowerCase() || '';
-        card.style.display = (title.includes(query) || desc.includes(query)) ? '' : 'none';
+        const text = (card.dataset.search || card.textContent || '').toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
       });
       page.querySelectorAll('.math-subsection').forEach(sec => {
         const visible = [...sec.querySelectorAll('.math-note-card')].some(c => c.style.display !== 'none');
         sec.style.display = visible ? '' : 'none';
       });
+      const activeMode = page.querySelector('.subject-mode.active')?.dataset.mode || 'notas';
+      const results = page.querySelector(`#${page.id === 'page-matematicas' ? 'math' : 'phy'}-notes-${activeMode}`);
+      const count = results?.querySelectorAll('.math-note-card:not([style*="display: none"])').length || 0;
+      if (feedback) {
+        feedback.textContent = count ? `${count} resultado${count === 1 ? '' : 's'}` : 'No hay resultados para esta búsqueda.';
+        feedback.hidden = false;
+      }
     });
   }
 

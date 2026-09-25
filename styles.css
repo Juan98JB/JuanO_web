@@ -1882,4 +1882,82 @@ main {
 }
 
 
+/* Material catalog, exercise reader, and workshop refinements */
+.math-featured__card,
+.math-note-card {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+}
+.math-note-card { display: block; }
+.material-type-label {
+  display: inline-flex;
+  margin-top: .35rem;
+  padding: .18rem .48rem;
+  border-radius: 999px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: .68rem;
+  font-weight: 700;
+}
+.material-empty, .search-feedback {
+  padding: 1rem 1.15rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.search-feedback { margin: -.8rem 0 1rem; padding: .6rem .85rem; font-size: .85rem; }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.block-add-toolbar:not([hidden]) { display: flex; }
+.note-compose-layout[hidden] { display: none; }
+.math-note-card:focus-visible, .math-featured__card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.library-create-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.library-create-actions .save-btn { padding: .65rem .5rem; font-size: .82rem; }
+.admin-material-type { color: var(--accent); font-size: .66rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.exercise-editor-fields { display: grid; gap: .8rem; padding-top: .8rem; border-top: 1px solid var(--border-color); }
+.exercise-editor-fields[hidden], .exercise-preview-panel[hidden] { display: none; }
+.exercise-editor-fields textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  padding: .75rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: .92rem/1.55 Consolas, monospace;
+}
+.exercise-preview-panel { min-height: 0; margin: .5rem 0; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-primary); overflow: auto; }
+.exercise-preview-content { padding: 1.1rem 1.25rem; }
+.exercise-preview-content h2 { margin-top: 0; }
+.exercise-reading__eyebrow { color: var(--accent); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.exercise-reading__prompt { margin: 2rem 0 1.4rem; padding: 1.15rem 1.25rem; border-left: 3px solid var(--accent); border-radius: 0 9px 9px 0; background: var(--bg-primary); }
+.exercise-reading__prompt h2 { margin: 0 0 .75rem; font-size: 1.15rem; }
+.exercise-difficulty { display: inline-block; padding: .25rem .65rem; border-radius: 999px; background: var(--accent-light); color: var(--accent); font-size: .76rem; font-weight: 700; }
+.exercise-disclosure { margin: .9rem 0; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-primary); }
+.exercise-disclosure summary { padding: .9rem 1rem; color: var(--accent); cursor: pointer; font-weight: 700; }
+.exercise-disclosure > div { padding: 0 1rem 1rem; line-height: 1.7; }
+.exercise-solution[open] { border-color: var(--accent); }
+
+@media (max-width: 900px) {
+  .notes-admin-layout:not(.library-collapsed) { grid-template-columns: 220px minmax(0, 1fr); }
+  .notes-library { display: block; padding: 1rem; opacity: 1; overflow: auto; pointer-events: auto; }
+}
+@media (max-width: 680px) {
+  .notes-admin-layout.library-collapsed .notes-library { display: none; }
+  .notes-admin-layout:not(.library-collapsed) .notes-library { display: block; max-height: 32vh; border-bottom: 1px solid var(--border-color); }
+  .exercise-preview-content { padding: .85rem; }
+}
 

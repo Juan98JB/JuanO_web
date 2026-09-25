@@ -53,7 +53,7 @@
             <a href="#" class="nav-link" data-page="recomendaciones">Curr&iacute;culum</a>
         </nav>
         <button class="theme-toggle">🌙</button>
-        <button class="notes-admin-btn admin_btn" style="display:none">Administrar notas</button>
+        <button class="notes-admin-btn admin_btn" style="display:none">Administrar materiales</button>
         <button class="export-btn admin_btn" style="display:none">Exportar data.json</button>
     </header>
 
@@ -229,7 +229,8 @@
         <section class="page" id="page-matematicas">
             <div class="math-bar">
                 <div class="math-search">
-                    <input class="math-search__input" type="text" placeholder="Buscar notas, ejercicios, temas..." id="math-search-input">
+                    <label class="visually-hidden" for="math-search-input">Buscar material de Matemáticas</label>
+                    <input class="math-search__input" type="search" placeholder="Buscar notas o ejercicios..." id="math-search-input">
                 </div>
                 <div class="math-stat-group">
                     <div class="math-stat">
@@ -246,10 +247,11 @@
                     </div>
                 </div>
             </div>
+            <p class="search-feedback" id="math-search-feedback" role="status" aria-live="polite" hidden></p>
 
             <div class="mode-tabs math-mode-tabs">
-                <button class="mode-tab active" data-mode="notas">Notas</button>
-                <button class="mode-tab" data-mode="ejercicios">Ejercicios</button>
+                <button class="mode-tab active" type="button" data-mode="notas" aria-pressed="true">Notas</button>
+                <button class="mode-tab" type="button" data-mode="ejercicios" aria-pressed="false">Ejercicios</button>
             </div>
 
             <div class="math-categories">
@@ -309,7 +311,8 @@
         <section class="page" id="page-fisica">
             <div class="math-bar">
                 <div class="math-search">
-                    <input class="math-search__input" type="text" placeholder="Buscar notas, ejercicios, temas..." id="phy-search-input">
+                    <label class="visually-hidden" for="phy-search-input">Buscar material de Física</label>
+                    <input class="math-search__input" type="search" placeholder="Buscar notas o ejercicios..." id="phy-search-input">
                 </div>
                 <div class="math-stat-group">
                     <div class="math-stat">
@@ -326,10 +329,11 @@
                     </div>
                 </div>
             </div>
+            <p class="search-feedback" id="phy-search-feedback" role="status" aria-live="polite" hidden></p>
 
             <div class="mode-tabs math-mode-tabs">
-                <button class="mode-tab active" data-mode="notas">Notas</button>
-                <button class="mode-tab" data-mode="ejercicios">Ejercicios</button>
+                <button class="mode-tab active" type="button" data-mode="notas" aria-pressed="true">Notas</button>
+                <button class="mode-tab" type="button" data-mode="ejercicios" aria-pressed="false">Ejercicios</button>
             </div>
 
             <div class="math-categories">
@@ -432,11 +436,11 @@
         <div class="notes-admin-panel" role="dialog" aria-modal="true" aria-labelledby="notes-admin-title">
             <header class="notes-admin-heading">
                 <div class="notes-admin-brand">
-                    <button class="secondary-btn notes-sidebar-toggle" type="button" aria-controls="notes-library" aria-expanded="true">☰ Notas</button>
+                    <button class="secondary-btn notes-sidebar-toggle" type="button" aria-controls="notes-library" aria-expanded="true">☰ Materiales</button>
                     <div>
                         <p class="eyebrow">Modo concentración</p>
-                        <h2 id="notes-admin-title">Taller de notas</h2>
-                        <p class="admin-help">Fuente Markdown/directivas a la izquierda, resultado en vivo a la derecha.</p>
+                        <h2 id="notes-admin-title">Taller de materiales</h2>
+                        <p class="admin-help">Crea notas de estudio o ejercicios con solución explicada.</p>
                     </div>
                 </div>
                 <div class="notes-admin-header-actions">
@@ -447,14 +451,18 @@
             </header>
             <div class="notes-admin-layout">
                 <aside class="notes-library" id="notes-library">
-                    <button class="save-btn notes-new-btn" type="button">+ Nueva nota</button>
-                    <input id="admin-notes-search" class="admin-notes-search" type="search" placeholder="Buscar notas...">
+                    <div class="library-create-actions">
+                        <button class="save-btn notes-new-btn" type="button">+ Nota</button>
+                        <button class="save-btn exercises-new-btn" type="button">+ Ejercicio</button>
+                    </div>
+                    <label class="visually-hidden" for="admin-notes-search">Buscar materiales</label>
+                    <input id="admin-notes-search" class="admin-notes-search" type="search" placeholder="Buscar materiales...">
                     <div id="admin-notes-list" class="admin-notes-list"></div>
                 </aside>
 
                 <section class="note-workspace">
                     <details class="note-metadata">
-                        <summary>Configuración de nota <span>título, materia, categoría y etiquetas</span></summary>
+                        <summary>Datos del material <span>título, materia, tema y publicación</span></summary>
                         <form id="note-editor-form" class="note-editor-form">
                             <input type="hidden" id="note-id-input">
                             <label>Título <input id="note-title-input" required></label>
@@ -476,10 +484,22 @@
                             </div>
                             <label>Descripción <input id="note-desc-input"></label>
                             <label>Etiquetas <input id="note-tags-input" placeholder="cálculo, derivadas, análisis"></label>
+                            <div id="exercise-editor-fields" class="exercise-editor-fields" hidden>
+                                <label>Dificultad
+                                    <select id="exercise-difficulty-input">
+                                        <option value="Inicial">Inicial</option>
+                                        <option value="Intermedio">Intermedio</option>
+                                        <option value="Avanzado">Avanzado</option>
+                                    </select>
+                                </label>
+                                <label>Enunciado <textarea id="exercise-prompt-input" rows="7" placeholder="Describe el problema. Puedes escribir fórmulas LaTeX."></textarea></label>
+                                <label>Pista (opcional) <textarea id="exercise-hint-input" rows="3" placeholder="Una sugerencia breve para orientar la resolución."></textarea></label>
+                                <label>Solución explicada <textarea id="exercise-solution-input" rows="9" placeholder="Explica el procedimiento paso a paso."></textarea></label>
+                            </div>
                         </form>
                     </details>
 
-                    <div class="note-compose-layout">
+                    <div class="note-compose-layout" id="note-compose-layout">
                         <aside class="note-outline-panel">
                             <div class="panel-heading">
                                 <h3>Estructura</h3>
@@ -530,9 +550,13 @@
                             <div id="note-preview-content" class="book-content note-preview-content"></div>
                         </aside>
                     </div>
+                    <section id="exercise-preview-panel" class="exercise-preview-panel" hidden>
+                        <div class="panel-heading"><h3>Vista previa</h3><span>Así lo verá quien estudia</span></div>
+                        <div id="exercise-preview-content" class="book-content exercise-preview-content"></div>
+                    </section>
 
                     <div class="note-editor-actions">
-                        <button class="secondary-btn note-open-btn" type="button">Abrir nota</button>
+                        <button class="secondary-btn note-open-btn" type="button">Vista previa</button>
                         <button class="secondary-btn note-backup-btn" type="button">Descargar respaldo</button>
                         <button class="secondary-btn visual-note-delete-btn" type="button">Eliminar nota</button>
                     </div>
