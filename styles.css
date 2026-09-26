@@ -1585,6 +1585,12 @@ main {
   background: var(--bg-primary);
 }
 .latex-environment__title { display: block; margin-bottom: 0.35rem; }
+.latex-text-medium { font-weight: 500; }
+.latex-text-normal, .latex-text-upright { font-style: normal; font-weight: normal; }
+.latex-textrm { font-family: Georgia, serif; }
+.latex-text-small-caps { font-variant: small-caps; }
+.latex-text-sans { font-family: Arial, sans-serif; }
+.latex-text-monospace { font-family: Consolas, monospace; }
 
 .note-code {
   position: relative;

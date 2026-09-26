@@ -514,6 +514,7 @@ En modo administrador aparece el botón `Administrar notas`. El taller ofrece:
 - Modo `Fuente` sincronizado con los bloques mediante directivas como `% @latex` y `% @code python`.
 - Vista previa MathJax en vivo.
 - Normaliza entornos con llaves ausentes o espacios extra y presenta entornos de texto comunes (`center`, `theorem`, `proof`, entre otros) sin pasarlos como fórmulas matemáticas.
+- Interpreta comandos tipográficos de texto como `\textbf{}`, `\textit{}`, `\emph{}`, `\underline{}` y `\texttt{}` fuera de delimitadores matemáticos.
 - Selectores de materia, categoría y estado.
 - Guardado automático y descarga de respaldos JSON.
 
