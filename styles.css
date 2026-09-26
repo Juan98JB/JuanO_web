@@ -1572,6 +1572,20 @@ main {
   margin: 1rem 0;
 }
 
+.latex-environment { margin: 0.8rem 0; }
+.latex-environment--center { text-align: center; }
+.latex-environment--flushleft { text-align: left; }
+.latex-environment--flushright { text-align: right; }
+.latex-environment--quote, .latex-environment--quotation { margin-inline: 1.5rem; }
+.latex-environment--theorem, .latex-environment--proof, .latex-environment--definition,
+.latex-environment--lemma, .latex-environment--corollary, .latex-environment--proposition,
+.latex-environment--remark, .latex-environment--example, .latex-environment--solution {
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--bg-primary);
+}
+.latex-environment__title { display: block; margin-bottom: 0.35rem; }
+
 .note-code {
   position: relative;
   overflow-x: auto;
@@ -1948,6 +1962,7 @@ main {
 .exercise-difficulty { display: inline-block; padding: .25rem .65rem; border-radius: 999px; background: var(--accent-light); color: var(--accent); font-size: .76rem; font-weight: 700; }
 .exercise-disclosure { margin: .9rem 0; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-primary); }
 .exercise-disclosure summary { padding: .9rem 1rem; color: var(--accent); cursor: pointer; font-weight: 700; }
+.exercise-reading__prompt > div, .exercise-disclosure > div { white-space: pre-line; }
 .exercise-disclosure > div { padding: 0 1rem 1rem; line-height: 1.7; }
 .exercise-solution[open] { border-color: var(--accent); }
 

@@ -201,20 +201,38 @@ document.addEventListener('DOMContentLoaded', () => {
     return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  let mathJaxReadyPromise = null;
+
+  function waitForMathJax() {
+    if (window.MathJax?.typesetPromise) {
+      return window.MathJax.startup?.promise || Promise.resolve();
+    }
+    if (!mathJaxReadyPromise) {
+      const script = document.getElementById('MathJax-script');
+      if (!script) return Promise.resolve();
+      mathJaxReadyPromise = new Promise(resolve => {
+        script.addEventListener('load', () => {
+          Promise.resolve(window.MathJax?.startup?.promise).then(resolve, resolve);
+        }, { once: true });
+        script.addEventListener('error', resolve, { once: true });
+      });
+    }
+    return mathJaxReadyPromise;
+  }
+
   function typesetMathJax(elements) {
-    if (!window.MathJax) return;
     const targets = elements || undefined;
-    const typeset = () => {
+    waitForMathJax().then(() => {
+      if (!window.MathJax?.typesetPromise) return;
       try {
         if (targets) MathJax.typesetClear?.(targets);
-        return MathJax.typesetPromise(targets);
+        return MathJax.typesetPromise(targets).catch(error => {
+          console.warn('No se pudo interpretar LaTeX:', error);
+        });
       } catch (error) {
         console.warn('No se pudo interpretar LaTeX:', error);
-        return Promise.resolve();
       }
-    };
-    const ready = window.MathJax.startup?.promise || Promise.resolve();
-    ready.then(typeset).catch(error => console.warn('Error de MathJax:', error));
+    }).catch(error => console.warn('Error de MathJax:', error));
   }
 
   function topicItemsFor(subject) {
@@ -437,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentEl = document.getElementById('book-content-container');
     const subjectLabel = exercise.subject === 'fisica' ? 'Física' : 'Matemáticas';
     const categoryText = categoryLabelFor(exercise.subject, exercise.category);
-    const textBlock = value => escapeHtml(value || '').replace(/\n/g, '<br>');
+    const textBlock = value => LatexUtils.formatLatexText(value || '');
     document.getElementById('book-title').textContent = exercise.title || 'Ejercicio';
     tocEl.innerHTML = '<li><span>Ejercicio</span></li>';
     contentEl.innerHTML = `
@@ -469,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderInlineBlock(block) {
     const content = block.type === 'latex'
-      ? escapeHtml(block.content || '')
+      ? LatexUtils.formatLatexText(block.content || '')
       : escapeHtml(block.content || '').replace(/\n/g, '<br>');
     if (block.type === 'code') {
       return `<pre class="note-code"><code>${escapeHtml(block.content || '')}</code><button class="copy-code-btn" type="button">Copiar</button></pre>`;
@@ -811,7 +829,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const blocks = [];
     const directive = /^% @(text|latex|quote|code)(?:\s+([^\s]+))?\s*$/gm;
     const matches = [...source.matchAll(directive)];
-    if (!matches.length) return source.trim() ? [{ type: 'latex', content: source.trim() }] : [];
+    if (!matches.length) {
+      const content = source.trim();
+      if (!content) return [];
+      const looksLikeLatex = LatexUtils.hasLatexSyntax(content);
+      return [{ type: looksLikeLatex ? 'latex' : 'text', content }];
+    }
     matches.forEach((match, index) => {
       const start = match.index + match[0].length;
       const end = matches[index + 1]?.index ?? source.length;
@@ -879,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderVisualExercisePreview() {
     const preview = document.getElementById('exercise-preview-content');
     if (!preview || !visualEditorExercise) return;
-    const textBlock = value => escapeHtml(value || '').replace(/\n/g, '<br>');
+    const textBlock = value => LatexUtils.formatLatexText(value || '');
     preview.innerHTML = `
       <p class="exercise-reading__eyebrow">Vista de lector</p>
       <h2>${escapeHtml(visualEditorExercise.title || 'Nuevo ejercicio')}</h2>

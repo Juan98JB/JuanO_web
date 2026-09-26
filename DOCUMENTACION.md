@@ -27,8 +27,10 @@ web_Juan/
 ├── index.html          # Página principal (SPA)
 ├── styles.css          # Todos los estilos CSS
 ├── script.js           # Toda la lógica JavaScript
+├── latex-utils.js      # Normalización y renderizado seguro de entornos LaTeX
 ├── data.json           # Contenido inicial de tarjetas
 ├── server.js           # Servidor local de desarrollo (NO va a producción)
+├── tests/               # Pruebas del parser LaTeX (node --test)
 └── images/             # Carpeta para imágenes subidas (vacía)
 ```
 
@@ -511,8 +513,11 @@ En modo administrador aparece el botón `Administrar notas`. El taller ofrece:
 - Atajos para fracciones, raíces, integrales, sumas y matrices.
 - Modo `Fuente` sincronizado con los bloques mediante directivas como `% @latex` y `% @code python`.
 - Vista previa MathJax en vivo.
+- Normaliza entornos con llaves ausentes o espacios extra y presenta entornos de texto comunes (`center`, `theorem`, `proof`, entre otros) sin pasarlos como fórmulas matemáticas.
 - Selectores de materia, categoría y estado.
 - Guardado automático y descarga de respaldos JSON.
+
+Las pruebas del parser se ejecutan con `node --test tests/latex-utils.test.js`.
 
 Los borradores se guardan en `localStorage` dentro de la clave principal `webjuan_cards`, bajo la propiedad `webjuan_notes_drafts`. No se pierde el contenido al recargar el navegador, pero todavía no se comparte entre dispositivos.
 
